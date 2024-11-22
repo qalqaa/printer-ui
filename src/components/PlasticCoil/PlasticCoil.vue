@@ -15,9 +15,9 @@ const cuttingModeHandle = () => (isCuttingMode.value = !isCuttingMode.value)
 const cut = () => {
   if (cutLength.value > localLength.value) {
     localLength.value = 0
-  } else {
-    localLength.value -= cutLength.value
+    return
   }
+  localLength.value -= cutLength.value
 }
 </script>
 
