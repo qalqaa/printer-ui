@@ -1,7 +1,7 @@
 {
   "printers": [
     {
-      "id": "1",
+      "id": "bfxyqee",
       "name": "IPrinter",
       "brand": "Apple",
       "coil": {
@@ -11,13 +11,21 @@
         "length": 50
       },
       "queue": [
-        { "id": "1", "name": "Автобус", "perimeter": 10 },
-        { "id": "2", "name": "Автобус", "perimeter": 10 }
+        {
+          "id": "4s1nn5v",
+          "name": "Автобус",
+          "perimeter": 10
+        },
+        {
+          "id": "2",
+          "name": "Автобус",
+          "perimeter": 10
+        }
       ],
       "imgUrl": "Iprinter.png"
     },
     {
-      "id": "2",
+      "id": "ukcuraf",
       "name": "LegionPrint",
       "brand": "Lenovo",
       "coil": null,
@@ -25,12 +33,20 @@
       "imgUrl": "LenovoPrinter.png"
     },
     {
-      "id": "3",
+      "id": "ia4dilg",
       "name": "OnePrinter",
       "brand": "Huawei",
       "coil": null,
       "queue": [],
       "imgUrl": "HuaweiPrinter.png"
+    },
+    {
+      "id": "0485",
+      "name": "TestPrinter",
+      "brand": "TestCompany",
+      "imgUrl": "3d-printer.png",
+      "coil": null,
+      "queue": []
     }
   ],
   "figures": [],

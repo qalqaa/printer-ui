@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import type { IPrinter } from '@/model/interfaces'
-import { onMounted } from 'vue'
 import PrinterCard from '../PrinterCard/PrinterCard.vue'
-
-const props = defineProps<{ items: IPrinter[] }>()
-onMounted(() => console.log(props.items))
+defineProps<{ items: IPrinter[] }>()
 </script>
 
 <template>
