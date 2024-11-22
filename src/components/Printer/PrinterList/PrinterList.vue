@@ -26,6 +26,6 @@ onMounted(() => console.log(props.items))
 .printer-list {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(2, 1fr);
+  /* grid-template-rows: repeat(2, 1fr); */
 }
 </style>
