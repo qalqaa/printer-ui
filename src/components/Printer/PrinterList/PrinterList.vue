@@ -25,7 +25,19 @@ onMounted(() => console.log(props.items))
 <style>
 .printer-list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   /* grid-template-rows: repeat(2, 1fr); */
+}
+
+@media (max-width: 1200px) {
+  .printer-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .printer-list {
+    grid-template-columns: repeat(1, 1fr);
+  }
 }
 </style>
