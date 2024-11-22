@@ -23,32 +23,33 @@ const cut = () => {
 </script>
 
 <template>
-  <div>
-    <div>Material: {{ material }}</div>
-    <div>Color: {{ color }}</div>
-    <div>Length: {{ localLength }} m</div>
-    <button v-if="!isCuttingMode" @click="cuttingModeHandle()">Undercut Coil</button>
-    <div
-      v-if="isCuttingMode"
-      class="w-screen h-screen left-0 top-0 absolute blur flex items-center justify-content-center align-items-center"
-    >
-      <div class="bg-color-soft flex flex-column gap-2 p-4 w-3 pt-5 border-round-lg relative">
-        <button class="inverted absolute top-0 right-0" @click="isCuttingMode = false">x</button>
-        <p>Length: {{ localLength }}</p>
-        <div class="input-box">
-          <label for="cutLength">Choose cut length</label>
-          <input
-            id="cutLength"
-            class="w-full"
-            placeholder=""
-            v-model="cutLength"
-            min="0"
-            :max="localLength"
-            type="number"
-          />
-        </div>
-        <button @click="cut()">Cut</button>
+  <p>Material: {{ material }}</p>
+  <p>Color: {{ color }}</p>
+  <p>Length: {{ localLength }} m</p>
+  <button v-if="!isCuttingMode && localLength > 0" @click="cuttingModeHandle()">
+    Undercut Coil
+  </button>
+  <button class="inverted" v-if="localLength === 0">Refill Coil</button>
+  <div
+    v-if="isCuttingMode"
+    class="w-screen h-screen left-0 top-0 absolute blur flex items-center justify-content-center align-items-center"
+  >
+    <div class="bg-color-soft flex flex-column gap-2 p-4 w-3 pt-5 border-round-lg relative">
+      <button class="inverted absolute top-0 right-0" @click="isCuttingMode = false">x</button>
+      <p>Length: {{ localLength }}</p>
+      <div class="input-box">
+        <label for="cutLength">Choose cut length</label>
+        <input
+          id="cutLength"
+          class="w-full"
+          placeholder=""
+          v-model="cutLength"
+          min="0"
+          :max="localLength"
+          type="number"
+        />
       </div>
+      <button @click="cut()">Cut</button>
     </div>
   </div>
 </template>

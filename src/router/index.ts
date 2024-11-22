@@ -1,4 +1,4 @@
-import PrinterList from '@/components/Printer/PrinterList/PrinterList.vue'
+import PrintersView from '@/views/PrintersView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 
@@ -13,7 +13,7 @@ const router = createRouter({
     {
       path: '/printers',
       name: 'printers',
-      component: PrinterList,
+      component: PrintersView,
     },
   ],
 })

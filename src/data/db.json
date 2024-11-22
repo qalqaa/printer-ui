@@ -1,0 +1,38 @@
+{
+  "printers": [
+    {
+      "id": "1",
+      "name": "IPrinter",
+      "brand": "Apple",
+      "coil": {
+        "id": "1",
+        "material": "ABS",
+        "color": "red",
+        "length": 50
+      },
+      "queue": [
+        { "id": "1", "name": "Автобус", "perimeter": 10 },
+        { "id": "2", "name": "Автобус", "perimeter": 10 }
+      ],
+      "imgUrl": "Iprinter.png"
+    },
+    {
+      "id": "2",
+      "name": "LegionPrint",
+      "brand": "Lenovo",
+      "coil": null,
+      "queue": [],
+      "imgUrl": "LenovoPrinter.png"
+    },
+    {
+      "id": "3",
+      "name": "OnePrinter",
+      "brand": "Huawei",
+      "coil": null,
+      "queue": [],
+      "imgUrl": "HuaweiPrinter.png"
+    }
+  ],
+  "figures": [],
+  "plasticCoils": []
+}
