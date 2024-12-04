@@ -1,10 +1,11 @@
 import type { Meter } from './types'
 
-export interface IPlasticCoil {
+export interface ICoil {
   id: string
   material: string
   color: string
   length: Meter
+  imgUrl?: string
 }
 
 export interface IFigure {
@@ -17,7 +18,7 @@ export interface IPrinter {
   id: string
   name: string
   brand: string
-  imgUrl: string
-  coil: IPlasticCoil | null
+  imgUrl?: string
+  coil: ICoil | null
   queue: IFigure[] | null
 }

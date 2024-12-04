@@ -1,1 +1,19 @@
 @import '../../../node_modules/qalqa-stylesheet/main.css';
+
+.list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* grid-template-rows: repeat(2, 1fr); */
+}
+
+@media (max-width: 1200px) {
+  .list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .list {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}

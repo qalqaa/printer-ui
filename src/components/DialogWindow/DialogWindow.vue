@@ -21,7 +21,7 @@ const handleConfirm = () => {
 }
 
 const handleEscKey = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
+  if (props.isOpen && event.key === 'Escape') {
     handleClose()
   }
 }
@@ -38,7 +38,7 @@ onUnmounted(() => {
   <div
     v-if="isOpen"
     @click="handleOverlayClick"
-    class="w-screen h-screen left-0 top-0 absolute blur flex items-center justify-content-center align-items-center"
+    class="w-screen h-screen left-0 top-0 fixed blur flex items-center justify-content-center align-items-center fade-in"
   >
     <div
       class="bg-color flex flex-column gap-2 p-4 w-3 pt-5 border-round-lg t relative"
@@ -50,3 +50,18 @@ onUnmounted(() => {
     </div>
   </div>
 </template>
+
+<style>
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: 0.3s ease-in-out fade-in;
+}
+</style>

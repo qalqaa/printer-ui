@@ -1,3 +1,4 @@
+import CoilsView from '@/views/CoilsView.vue'
 import PrintersView from '@/views/PrintersView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -8,6 +9,11 @@ const router = createRouter({
       path: '/',
       name: 'printers',
       component: PrintersView,
+    },
+    {
+      path: '/coils',
+      name: 'coils',
+      component: CoilsView,
     },
   ],
 })

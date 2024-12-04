@@ -5,7 +5,7 @@ defineProps<{ items: IPrinter[] }>()
 </script>
 
 <template>
-  <ul class="printer-list gap-3 px-3">
+  <ul class="list gap-3 px-3">
     <PrinterCard
       v-for="item in items"
       :key="item.id"
@@ -19,22 +19,4 @@ defineProps<{ items: IPrinter[] }>()
   </ul>
 </template>
 
-<style>
-.printer-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  /* grid-template-rows: repeat(2, 1fr); */
-}
-
-@media (max-width: 1200px) {
-  .printer-list {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .printer-list {
-    grid-template-columns: repeat(1, 1fr);
-  }
-}
-</style>
+<style></style>
