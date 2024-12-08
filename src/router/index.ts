@@ -1,4 +1,6 @@
 import CoilsView from '@/views/CoilsView.vue'
+import FiguresView from '@/views/FiguresView.vue'
+import NotFoundView from '@/views/NotFoundView.vue'
 import PrintersView from '@/views/PrintersView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
@@ -9,6 +11,11 @@ const router = createRouter({
       path: '/',
       name: 'printers',
       component: PrintersView,
+    },
+    {
+      path: '/:catchAll(.*)',
+      name: 'not-found',
+      component: NotFoundView,
     },
     {
       path: '/coils',
