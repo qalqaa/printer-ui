@@ -1,5 +1,69 @@
 <script setup lang="ts">
+import { onMounted, provide, ref } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
+import { DataService } from './data/api/api'
+import type { ICoil, IFigure, IPrinter } from './model/interfaces'
+import { printersKey } from './util/injectionKeys'
+
+const printerService = new DataService<IPrinter>('IPrinter', 'printer-offline')
+const coilsService = new DataService<ICoil>('ICoil', 'coil-offline')
+const figureService = new DataService<IFigure>('IFigure', 'figure-offline')
+
+const printersData = ref<IPrinter[]>([])
+const coilsData = ref<ICoil[]>([])
+const figuresData = ref<IFigure[]>([])
+
+const getPrintersData = async () => {
+  try {
+    const data = await printerService.getData()
+    printersData.value = data
+  } catch (error) {
+    console.error('Ошибка при загрузке принтеров:', error)
+  }
+}
+
+const getCoilsData = async () => {
+  try {
+    const data = await coilsService.getData()
+    coilsData.value = data
+  } catch (error) {
+    console.error('Ошибка при загрузке катушек:', error)
+  }
+}
+
+const getFiguresData = async () => {
+  try {
+    const data = await figureService.getData()
+    figuresData.value = data
+  } catch (error) {
+    console.error('Ошибка при загрузке фигур:', error)
+  }
+}
+
+const render = async () => {
+  try {
+    await Promise.all([getPrintersData(), getCoilsData(), getFiguresData()])
+  } catch (error) {
+    console.error('Ошибка при загрузке данных:', error)
+  }
+}
+
+onMounted(() => {
+  render()
+})
+
+provide(printersKey, {
+  data: printersData,
+  fetchData: getPrintersData,
+})
+provide('coils', {
+  coilsData,
+  getCoilsData,
+})
+provide('figures', {
+  figuresData,
+  getFiguresData,
+})
 
 const router = useRouter()
 </script>
@@ -19,7 +83,7 @@ const router = useRouter()
       </div>
     </nav>
   </header>
-
+  <div></div>
   <RouterView />
 </template>
 

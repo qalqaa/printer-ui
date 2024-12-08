@@ -3,7 +3,7 @@ import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import { fetchRequest } from '@/data/api/api'
 import type { ICoil, IPrinter } from '@/model/interfaces'
 import { ref } from 'vue'
-import PlasticCoil from '../../PlasticCoil/card/CoilCard.vue'
+import coil from '../../Coil/card/CoilCard.vue'
 
 const props = defineProps<IPrinter>()
 
@@ -14,7 +14,7 @@ const coilData = ref<ICoil[]>([])
 const selectedCoil = ref<ICoil>()
 
 const refillHandle = () => {
-  fetchRequest<ICoil[]>({ url: '/plasticCoils', method: 'GET' }).then(
+  fetchRequest<ICoil[]>({ url: '/coils', method: 'GET' }).then(
     (response) => (coilData.value = response),
   )
   if (coilData.value.length === 0) {
@@ -34,7 +34,7 @@ const refill = () => {
       coil: selectedCoil.value,
     },
   })
-  fetchRequest<ICoil>({ url: `/plasticCoils/${selectedCoil.value.id}`, method: 'DELETE' })
+  fetchRequest<ICoil>({ url: `/coils/${selectedCoil.value.id}`, method: 'DELETE' })
 }
 </script>
 
@@ -48,7 +48,7 @@ const refill = () => {
     </div>
     <div v-else class="bg-red flex flex-column px-2 py-3 border-round-lg">
       <h3 class="c-accent">Coil</h3>
-      <PlasticCoil
+      <coil
         :printer-props="props"
         :id="coil.id"
         :material="coil.material"

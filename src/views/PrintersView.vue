@@ -3,10 +3,18 @@ import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import PrinterList from '@/components/Printer/PrinterList/PrinterList.vue'
 import { fetchRequest } from '@/data/api/api'
 import type { IPrinter } from '@/model/interfaces'
-import { onMounted, ref } from 'vue'
+import { printersKey } from '@/util/injectionKeys'
+import { inject, onMounted, ref, watch } from 'vue'
 import DefaultView from './DefaultView.vue'
 
-const printersData = ref<IPrinter[]>([])
+const printers = inject(printersKey)
+
+if (!printers) {
+  throw new Error('Printers service is not provided')
+}
+
+const { data: printersData, fetchData: getPrintersData } = printers
+
 const loading = ref(true)
 const isCreatingModeTrue = ref(false)
 
@@ -32,13 +40,15 @@ const createPrinter = async () => {
 }
 
 const render = async () => {
-  fetchRequest<IPrinter[]>({ url: '/printers', method: 'GET' })
-    .then((response) => (printersData.value = response))
-    .finally(() => (loading.value = false))
+  getPrintersData()
 }
 
 onMounted(() => {
   render()
+})
+
+watch(printersData, () => {
+  loading.value = false
 })
 </script>
 <template>
