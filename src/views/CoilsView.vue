@@ -43,8 +43,12 @@ const render = async () => {
 }
 
 onMounted(() => {
-  render()
+  // render()
 })
+
+if (coilsData.value.length !== 0) {
+  loading.value = false
+}
 
 watch(coilsData, () => {
   loading.value = false
@@ -53,7 +57,8 @@ watch(coilsData, () => {
 <template>
   <DefaultView title="Coils" :loading :create-handle="creatingModeHandle">
     <template #list>
-      <CoilList :items="coilsData" />
+      <CoilList v-if="coilsData.length !== 0" :items="coilsData" />
+      <p v-else>No figures found</p>
     </template>
     <template #dialog>
       <DialogWindow

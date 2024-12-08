@@ -4,12 +4,7 @@
       "id": "bfxyqee",
       "name": "IPrinter",
       "brand": "Apple",
-      "coil": {
-        "id": "7481",
-        "material": "test4",
-        "color": "red",
-        "length": 100
-      },
+      "coil": null,
       "queue": [
         {
           "id": "4s1nn5v",
@@ -62,7 +57,14 @@
       "queue": []
     }
   ],
-  "figures": [],
+  "figures": [
+    {
+      "id": "qshgyv8",
+      "name": "Pidor",
+      "perimeter": -1,
+      "imgUrl": "figure.png"
+    }
+  ],
   "coils": [
     {
       "id": "bf89",

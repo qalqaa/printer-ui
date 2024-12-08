@@ -47,27 +47,32 @@ const refill = () => {
 </script>
 
 <template>
-  <li class="flex flex-column shadow-5 p-4 border-round-lg bg-color-soft gap-2">
-    <img class="w-7 mx-auto" :src="imgUrl" alt="printer_image" />
-    <h2>{{ name }} from {{ brand }}</h2>
-    <p>Print status: {{ isPrinting ? 'printing...' : 'offline' }}</p>
-    <div class="flex" v-if="!coil">
-      <button @click="refillHandle" class="inverted w-full">Add coil</button>
+  <li
+    class="flex flex-column shadow-5 p-4 border-round-lg bg-color-soft gap-2 justify-content-between"
+  >
+    <div class="flex flex-column gap-2">
+      <img class="w-7 mx-auto" :src="imgUrl" alt="printer_image" />
+      <h2>{{ name }} from {{ brand }}</h2>
+      <p>Print status: {{ isPrinting ? 'printing...' : 'offline' }}</p>
+      <div class="flex" v-if="!coil">
+        <button @click="refillHandle" class="inverted w-full">Add coil</button>
+      </div>
+      <div v-else class="bg-red flex flex-column px-2 py-3 border-round-lg">
+        <h3 class="c-accent">Coil</h3>
+        <CoilCard
+          :printer-props="props"
+          :id="coil.id"
+          :material="coil.material"
+          :color="coil.color"
+          :length="coil.length"
+        />
+      </div>
     </div>
-    <div v-else class="bg-red flex flex-column px-2 py-3 border-round-lg">
-      <h3 class="c-accent">Coil</h3>
-      <CoilCard
-        :printer-props="props"
-        :id="coil.id"
-        :material="coil.material"
-        :color="coil.color"
-        :length="coil.length"
-      />
+    <div class="flex flex-column gap-2">
+      <p v-if="queue?.length">Queue: {{ queue?.map((item) => item.name).join(', ') }}</p>
+      <button v-else>Add to queue</button>
+      <button @click="isPrinting = !isPrinting">Print</button>
     </div>
-
-    <p v-if="queue?.length">Queue: {{ queue?.map((item) => item.name).join(', ') }}</p>
-    <button v-else>Add to queue</button>
-    <button @click="isPrinting = !isPrinting">Print</button>
   </li>
   <DialogWindow :isOpen="isRefillMode" @close="refillHandle" :onConfirmAction="refill">
     <template #content>

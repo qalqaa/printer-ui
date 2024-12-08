@@ -1,36 +1,38 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
-import PrinterList from '@/components/Printer/PrinterList/PrinterList.vue'
-import { printersService } from '@/data/api/api'
+import FigureList from '@/components/Figure/list/FigureList.vue'
+import { figuresService } from '@/data/api/api'
 import { generateIDs } from '@/util/generateIDs'
-import { printersKey } from '@/util/injectionKeys'
+import { figuresKey } from '@/util/injectionKeys'
 import { inject, onMounted, ref, watch } from 'vue'
 import DefaultView from './DefaultView.vue'
 
-const printers = inject(printersKey)
+const figures = inject(figuresKey)
 
-if (!printers) {
-  throw new Error('Printers service is not provided')
+if (!figures) {
+  throw new Error('Figures service is not provided')
 }
 
-const { printersData } = printers
+const { figuresData, getFiguresData } = figures
 
 const loading = ref(true)
 const isCreatingModeTrue = ref(false)
 
 const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue.value)
 
-const printerName = ref('')
-const printerBrand = ref('')
+const figureName = ref('')
+const figurePerimeter = ref<number>()
 const createPrinter = async () => {
-  if (printerName.value !== '' && printerBrand.value !== '') {
-    printersService.postData({
+  if (figureName.value !== '' && figurePerimeter.value !== undefined) {
+    if (figurePerimeter.value < 0) {
+      console.error('Perimeter cannot be negative or null')
+      return
+    }
+    figuresService.postData({
       id: generateIDs(),
-      name: printerName.value,
-      brand: printerBrand.value,
-      imgUrl: '3d-printer.png',
-      coil: null,
-      queue: [],
+      name: figureName.value,
+      perimeter: figurePerimeter.value,
+      imgUrl: 'figure.png',
     })
   } else {
     console.error('printer name or brand is empty')
@@ -39,25 +41,25 @@ const createPrinter = async () => {
 }
 
 const render = async () => {
-  // getPrintersData()
+  getFiguresData()
 }
 
 onMounted(() => {
-  render()
+  // render()
 })
 
-if (printersData.value.length !== 0) {
+if (figuresData.value.length !== 0) {
   loading.value = false
 }
 
-watch(printersData, () => {
+watch(figuresData, () => {
   loading.value = false
 })
 </script>
 <template>
-  <DefaultView title="Printers" :loading="loading" :create-handle="creatingModeHandle">
+  <DefaultView title="Figures" :loading="loading" :create-handle="creatingModeHandle">
     <template #list>
-      <PrinterList v-if="printersData.length !== 0" :items="printersData" />
+      <FigureList v-if="figuresData.length !== 0" :items="figuresData" />
       <p v-else>No figures found</p>
     </template>
     <template #dialog>
@@ -67,27 +69,28 @@ watch(printersData, () => {
         @confirmAction="createPrinter"
       >
         <template #content>
-          <h2>Create a new printer</h2>
+          <h2>Create a new figure</h2>
           <div class="input-box">
-            <label for="printerName">Enter printer name</label>
+            <label for="printerName">Enter name</label>
             <input
               class="w-full"
               required
               placeholder=""
-              v-model="printerName"
+              v-model="figureName"
               id="printerName"
               type="text"
             />
           </div>
           <div class="input-box">
-            <label for="printerName">Enter printer brand</label>
+            <label for="printerName">Enter perimeter</label>
             <input
               class="w-full"
               required
               placeholder=""
-              v-model="printerBrand"
+              min="0"
+              v-model="figurePerimeter"
               id="printerBrand"
-              type="text"
+              type="number"
             />
           </div>
         </template>

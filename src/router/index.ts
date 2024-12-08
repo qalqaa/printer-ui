@@ -22,6 +22,11 @@ const router = createRouter({
       name: 'coils',
       component: CoilsView,
     },
+    {
+      path: '/figure-library',
+      name: 'figure-library',
+      component: FiguresView,
+    },
   ],
 })
 

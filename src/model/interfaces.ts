@@ -12,6 +12,7 @@ export interface IFigure {
   id: string
   name: string
   perimeter: Meter
+  imgUrl?: string
 }
 
 export interface IPrinter {
