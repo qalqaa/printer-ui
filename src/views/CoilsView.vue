@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import CoilList from '@/components/Coil/list/CoilList.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
-import CoilList from '@/components/PlasticCoil/list/CoilList.vue'
 import { fetchRequest } from '@/data/api/api'
 import type { ICoil } from '@/model/interfaces'
 import { onMounted, ref } from 'vue'
@@ -18,7 +18,7 @@ const coilLength = ref(0)
 const createCoil = async () => {
   if (coilMaterial.value !== '' && coilColor.value !== '' && coilLength.value !== 0) {
     await fetchRequest<ICoil>({
-      url: '/plasticCoils',
+      url: '/coils',
       method: 'POST',
       data: {
         material: coilMaterial.value,
@@ -31,7 +31,7 @@ const createCoil = async () => {
 }
 
 const render = async () => {
-  fetchRequest<ICoil[]>({ url: '/plasticCoils', method: 'GET' })
+  fetchRequest<ICoil[]>({ url: '/coils', method: 'GET' })
     .then((response) => (coilData.value = response))
     .finally(() => (loading.value = false))
 }

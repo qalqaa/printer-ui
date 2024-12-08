@@ -45,7 +45,7 @@
     }
   ],
   "figures": [],
-  "plasticCoils": [
+  "coils": [
     {
       "id": "bf89",
       "material": "test2",

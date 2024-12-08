@@ -28,7 +28,7 @@ const cut = () => {
       return
     }
     fetchRequest<ICoil>({
-      url: `/plasticCoils/${props.id}`,
+      url: `/coils/${props.id}`,
       method: 'DELETE',
     })
     return
