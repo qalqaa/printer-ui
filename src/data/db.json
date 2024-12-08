@@ -23,7 +23,12 @@
       "id": "ukcuraf",
       "name": "LegionPrint",
       "brand": "Lenovo",
-      "coil": null,
+      "coil": {
+        "id": "54f1",
+        "material": "test3",
+        "color": "red",
+        "length": 100
+      },
       "queue": [],
       "imgUrl": "LenovoPrinter.png"
     },
@@ -49,12 +54,6 @@
     {
       "id": "bf89",
       "material": "test2",
-      "color": "red",
-      "length": 100
-    },
-    {
-      "id": "54f1",
-      "material": "test3",
       "color": "red",
       "length": 100
     },
