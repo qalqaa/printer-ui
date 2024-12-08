@@ -1,5 +1,6 @@
 import { BASE_URL, EntityUrls } from '@/model/api/enums'
 import type { FetchParams, IDataRepository } from '@/model/api/interfaces'
+import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
 import type { EntityType } from '@/model/types'
 import type { AxiosRequestConfig, AxiosResponse } from 'axios'
 import axios from 'axios'
@@ -193,3 +194,7 @@ export class DataService<T extends EntityType> implements IDataRepository<T> {
     }
   }
 }
+
+export const printersService = new DataService<IPrinter>('IPrinter', 'printer-offline')
+export const coilsService = new DataService<ICoil>('ICoil', 'coil-offline')
+export const figuresService = new DataService<IFigure>('IFigure', 'figure-offline')

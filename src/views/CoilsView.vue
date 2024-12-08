@@ -1,12 +1,20 @@
 <script setup lang="ts">
 import CoilList from '@/components/Coil/list/CoilList.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
-import { fetchRequest } from '@/data/api/api'
-import type { ICoil } from '@/model/interfaces'
-import { onMounted, ref } from 'vue'
+import { coilsService } from '@/data/api/api'
+import { generateIDs } from '@/util/generateIDs'
+import { coilsKey } from '@/util/injectionKeys'
+import { inject, onMounted, ref, watch } from 'vue'
 import DefaultView from './DefaultView.vue'
 
-const coilData = ref<ICoil[]>([])
+const coils = inject(coilsKey)
+
+if (!coils) {
+  throw new Error('Coils service is not provided')
+}
+
+const { coilsData, getCoilsData } = coils
+
 const loading = ref(true)
 const isCreatingModeTrue = ref(false)
 
@@ -17,33 +25,35 @@ const coilColor = ref('')
 const coilLength = ref(0)
 const createCoil = async () => {
   if (coilMaterial.value !== '' && coilColor.value !== '' && coilLength.value !== 0) {
-    await fetchRequest<ICoil>({
-      url: '/coils',
-      method: 'POST',
-      data: {
-        material: coilMaterial.value,
-        color: coilColor.value,
-        length: coilLength.value,
-      },
+    coilsService.postData({
+      id: generateIDs(),
+      material: coilMaterial.value,
+      color: coilColor.value,
+      length: coilLength.value,
+      imgUrl: 'coil.png',
     })
+  } else {
+    console.error('printer name or brand is empty')
   }
   render()
 }
 
 const render = async () => {
-  fetchRequest<ICoil[]>({ url: '/coils', method: 'GET' })
-    .then((response) => (coilData.value = response))
-    .finally(() => (loading.value = false))
+  getCoilsData()
 }
 
 onMounted(() => {
   render()
 })
+
+watch(coilsData, () => {
+  loading.value = false
+})
 </script>
 <template>
   <DefaultView title="Coils" :loading :create-handle="creatingModeHandle">
     <template #list>
-      <CoilList :items="coilData" />
+      <CoilList :items="coilsData" />
     </template>
     <template #dialog>
       <DialogWindow

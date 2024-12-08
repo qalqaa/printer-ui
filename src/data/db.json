@@ -4,7 +4,12 @@
       "id": "bfxyqee",
       "name": "IPrinter",
       "brand": "Apple",
-      "coil": null,
+      "coil": {
+        "id": "7481",
+        "material": "test4",
+        "color": "red",
+        "length": 100
+      },
       "queue": [
         {
           "id": "4s1nn5v",
@@ -27,7 +32,7 @@
         "id": "54f1",
         "material": "test3",
         "color": "red",
-        "length": 100
+        "length": 50
       },
       "queue": [],
       "imgUrl": "LenovoPrinter.png"
@@ -47,6 +52,14 @@
       "imgUrl": "3d-printer.png",
       "coil": null,
       "queue": []
+    },
+    {
+      "id": "m40ffwd",
+      "name": "asd",
+      "brand": "asd",
+      "imgUrl": "3d-printer.png",
+      "coil": null,
+      "queue": []
     }
   ],
   "figures": [],
@@ -54,12 +67,6 @@
     {
       "id": "bf89",
       "material": "test2",
-      "color": "red",
-      "length": 100
-    },
-    {
-      "id": "7481",
-      "material": "test4",
       "color": "red",
       "length": 100
     }

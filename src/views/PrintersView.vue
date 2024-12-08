@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import PrinterList from '@/components/Printer/PrinterList/PrinterList.vue'
-import { fetchRequest } from '@/data/api/api'
-import type { IPrinter } from '@/model/interfaces'
+import { printersService } from '@/data/api/api'
+import { generateIDs } from '@/util/generateIDs'
 import { printersKey } from '@/util/injectionKeys'
 import { inject, onMounted, ref, watch } from 'vue'
 import DefaultView from './DefaultView.vue'
@@ -24,17 +24,16 @@ const printerName = ref('')
 const printerBrand = ref('')
 const createPrinter = async () => {
   if (printerName.value !== '' && printerBrand.value !== '') {
-    await fetchRequest<IPrinter>({
-      url: '/printers',
-      method: 'POST',
-      data: {
-        name: printerName.value,
-        brand: printerBrand.value,
-        imgUrl: '3d-printer.png',
-        coil: null,
-        queue: [],
-      },
+    printersService.postData({
+      id: generateIDs(),
+      name: printerName.value,
+      brand: printerBrand.value,
+      imgUrl: '3d-printer.png',
+      coil: null,
+      queue: [],
     })
+  } else {
+    console.error('printer name or brand is empty')
   }
   render()
 }
