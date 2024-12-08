@@ -1,3 +1,7 @@
+import type { ICoil, IFigure, IPrinter } from './interfaces'
+
 type Meter = number
 
-export type { Meter }
+type EntityType = IPrinter | ICoil | IFigure
+
+export type { EntityType, Meter }
