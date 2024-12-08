@@ -38,7 +38,7 @@ onUnmounted(() => {
   <div
     v-if="isOpen"
     @click="handleOverlayClick"
-    class="w-screen h-screen left-0 top-0 fixed blur flex items-center justify-content-center align-items-center fade-in"
+    class="w-screen h-screen left-0 top-0 fixed blur flex items-center justify-content-center align-items-center dialog-card"
   >
     <div
       class="bg-color flex flex-column gap-2 p-4 w-3 pt-5 border-round-lg t relative"
@@ -61,7 +61,8 @@ onUnmounted(() => {
   }
 }
 
-.fade-in {
+.dialog-card {
+  z-index: 9999;
   animation: 0.3s ease-in-out fade-in;
 }
 </style>

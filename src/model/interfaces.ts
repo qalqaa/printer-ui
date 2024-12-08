@@ -22,8 +22,3 @@ export interface IPrinter {
   coil: ICoil | null
   queue: IFigure[] | null
 }
-
-export interface IProvidePrinters {
-  data: IPrinter[]
-  fetchData: () => Promise<void>
-}

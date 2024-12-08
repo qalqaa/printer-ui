@@ -3,7 +3,7 @@ import { onMounted, provide, ref } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
 import { DataService } from './data/api/api'
 import type { ICoil, IFigure, IPrinter } from './model/interfaces'
-import { printersKey } from './util/injectionKeys'
+import { coilsKey, figuresKey, printersKey } from './util/injectionKeys'
 
 const printerService = new DataService<IPrinter>('IPrinter', 'printer-offline')
 const coilsService = new DataService<ICoil>('ICoil', 'coil-offline')
@@ -53,14 +53,14 @@ onMounted(() => {
 })
 
 provide(printersKey, {
-  data: printersData,
-  fetchData: getPrintersData,
+  printersData,
+  getPrintersData,
 })
-provide('coils', {
+provide(coilsKey, {
   coilsData,
   getCoilsData,
 })
-provide('figures', {
+provide(figuresKey, {
   figuresData,
   getFiguresData,
 })

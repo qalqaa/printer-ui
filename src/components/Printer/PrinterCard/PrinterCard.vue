@@ -3,7 +3,6 @@ import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import { fetchRequest } from '@/data/api/api'
 import type { ICoil, IPrinter } from '@/model/interfaces'
 import { ref } from 'vue'
-import coil from '../../Coil/card/CoilCard.vue'
 
 const props = defineProps<IPrinter>()
 
@@ -61,10 +60,9 @@ const refill = () => {
     <button v-else>Add to queue</button>
     <button @click="isPrinting = !isPrinting">Print</button>
   </li>
-  <DialogWindow :isOpen="isRefillMode" @close="refillHandle" @confirm-action="refill">
+  <DialogWindow :isOpen="isRefillMode" @close="refillHandle" :onConfirmAction="refill">
     <template #content>
       <select v-model="selectedCoil" name="coil" id="">
-        <option selected hidden disable>Select coil</option>
         <option
           v-for="item in coilData"
           :key="item.id"

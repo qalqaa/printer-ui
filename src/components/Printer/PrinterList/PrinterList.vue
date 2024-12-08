@@ -12,7 +12,6 @@ defineProps<{ items: IPrinter[] }>()
       v-bind="item"
       :name="item.name"
       :brand="item.brand"
-      :img="item.imgUrl"
       :coil="item.coil"
       :queue="item.queue"
     />

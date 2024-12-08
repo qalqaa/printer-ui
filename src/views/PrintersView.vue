@@ -13,7 +13,7 @@ if (!printers) {
   throw new Error('Printers service is not provided')
 }
 
-const { data: printersData, fetchData: getPrintersData } = printers
+const { printersData, getPrintersData } = printers
 
 const loading = ref(true)
 const isCreatingModeTrue = ref(false)
