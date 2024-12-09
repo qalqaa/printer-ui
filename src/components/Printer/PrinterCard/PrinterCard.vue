@@ -125,7 +125,7 @@ const print = () => {
           }
         })
     }
-  }, 100)
+  }, onePercentTime)
 }
 </script>
 
