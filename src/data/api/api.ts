@@ -1,3 +1,4 @@
+import { toastInstance } from '@/main'
 import { BASE_URL, EntityUrls } from '@/model/api/enums'
 import type { FetchParams, IDataRepository } from '@/model/api/interfaces'
 import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
@@ -146,6 +147,7 @@ export class DataService<T extends EntityType> implements IDataRepository<T> {
       const response = await fetch(BASE_URL)
       return response.ok
     } catch {
+      toastInstance.addToast('No internet connection, going dark...', 'error')
       return false
     }
   }

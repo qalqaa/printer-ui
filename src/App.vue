@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, provide, ref } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
+import { CustomError } from './model/error/customError'
 import { coilsService, figuresService, printersService } from './data/api/api'
 import type { ICoil, IFigure, IPrinter } from './model/interfaces'
 import { coilsKey, figuresKey, printersKey } from './util/injectionKeys'
@@ -14,7 +15,9 @@ const getPrintersData = async () => {
     const data = await printersService.getData()
     printersData.value = data
   } catch (error) {
-    console.error('Ошибка при загрузке принтеров:', error)
+    if (error instanceof Error) {
+      throw new CustomError(error.message)
+    }
   }
 }
 
@@ -23,7 +26,9 @@ const getCoilsData = async () => {
     const data = await coilsService.getData()
     coilsData.value = data
   } catch (error) {
-    console.error('Ошибка при загрузке катушек:', error)
+    if (error instanceof Error) {
+      throw new CustomError(error.message)
+    }
   }
 }
 
@@ -32,7 +37,9 @@ const getFiguresData = async () => {
     const data = await figuresService.getData()
     figuresData.value = data
   } catch (error) {
-    console.error('Ошибка при загрузке фигур:', error)
+    if (error instanceof Error) {
+      throw new CustomError(error.message)
+    }
   }
 }
 
@@ -40,7 +47,9 @@ const render = async () => {
   try {
     await Promise.all([getPrintersData(), getCoilsData(), getFiguresData()])
   } catch (error) {
-    console.error('Ошибка при загрузке данных:', error)
+    if (error instanceof Error) {
+      throw new CustomError(error.message)
+    }
   }
 }
 

@@ -2,6 +2,8 @@
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import FigureList from '@/components/Figure/list/FigureList.vue'
 import { figuresService } from '@/data/api/api'
+import { toastInstance } from '@/main'
+import { CustomError } from '@/model/error/customError'
 import { generateIDs } from '@/util/generateIDs'
 import { figuresKey } from '@/util/injectionKeys'
 import { computed, inject, onMounted, ref, watch } from 'vue'
@@ -25,8 +27,7 @@ const figurePerimeter = ref<number>()
 const createFigure = async () => {
   if (figureName.value !== '' && figurePerimeter.value !== undefined) {
     if (figurePerimeter.value < 0) {
-      console.error('Perimeter cannot be negative or null')
-      return
+      throw new CustomError("Perimeter can't be negative or null")
     }
     figuresService
       .postData({
@@ -39,8 +40,10 @@ const createFigure = async () => {
       .then(() => {
         getFiguresData()
       })
+    toastInstance.addToast('Coil created', 'success')
   } else {
-    console.error('printer name or brand is empty')
+    isCreatingModeTrue.value = false
+    throw new CustomError('Fill all required fields')
   }
 }
 

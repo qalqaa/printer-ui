@@ -2,11 +2,13 @@
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import PrinterList from '@/components/Printer/PrinterList/PrinterList.vue'
 import { printersService } from '@/data/api/api'
+import { toastInstance } from '@/main'
 import type { MillimeterPerSecond } from '@/model/types'
 import { generateIDs } from '@/util/generateIDs'
 import { printersKey } from '@/util/injectionKeys'
 import { inject, onMounted, ref, watch } from 'vue'
 import DefaultView from './DefaultView.vue'
+import { CustomError } from '@/model/error/customError'
 
 const printers = inject(printersKey)
 
@@ -14,7 +16,7 @@ if (!printers) {
   throw new Error('Printers service is not provided')
 }
 
-const { printersData } = printers
+const { printersData, getPrintersData } = printers
 
 const loading = ref(true)
 const isCreatingModeTrue = ref(false)
@@ -26,27 +28,30 @@ const printerBrand = ref()
 const printerSpeed = ref<MillimeterPerSecond>()
 const createPrinter = async () => {
   if (printerName.value !== '' && printerBrand.value !== '' && printerSpeed.value !== undefined) {
-    printersService.postData({
-      id: generateIDs(),
-      name: printerName.value,
-      speed: printerSpeed.value,
-      brand: printerBrand.value,
-      imgUrl: '3d-printer.png',
-      coil: null,
-      queue: [],
-    })
+    printersService
+      .postData({
+        id: generateIDs(),
+        name: printerName.value,
+        speed: printerSpeed.value,
+        brand: printerBrand.value,
+        imgUrl: '3d-printer.png',
+        coil: null,
+        queue: [],
+      })
+      .then(() => {
+        getPrintersData()
+      })
+    toastInstance.addToast('Printer created', 'success')
   } else {
-    console.error('printer name or brand is empty')
+    isCreatingModeTrue.value = false
+    throw new CustomError('Fill all required fields')
   }
-  render()
 }
 
-const render = async () => {
-  // getPrintersData()
-}
+// const render = async () => {}
 
 onMounted(() => {
-  render()
+  // render()
 })
 
 if (printersData.value.length !== 0) {
