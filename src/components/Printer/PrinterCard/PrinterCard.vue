@@ -150,6 +150,7 @@ const print = (): void => {
   const onePercentTime = (perimeterPrintedFigure * 10000) / props.speed
 
   if (!props.coil || props.coil.length < perimeterPrintedFigure) {
+    isPrinting.value = false
     throw new CustomError('Coil is too short')
   }
 
