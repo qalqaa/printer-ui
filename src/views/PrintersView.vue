@@ -6,7 +6,7 @@ import { toastInstance } from '@/main'
 import type { MillimeterPerSecond } from '@/model/types'
 import { generateIDs } from '@/util/generateIDs'
 import { printersKey } from '@/util/injectionKeys'
-import { inject, onMounted, ref, watch } from 'vue'
+import { inject, ref, watch } from 'vue'
 import DefaultView from './DefaultView.vue'
 import { CustomError } from '@/model/error/customError'
 
@@ -23,11 +23,36 @@ const isCreatingModeTrue = ref(false)
 
 const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue.value)
 
-const printerName = ref()
-const printerBrand = ref()
+const printerName = ref('')
+const printerBrand = ref('')
 const printerSpeed = ref<MillimeterPerSecond>()
+
+const errors = ref({
+  printerName: false,
+  printerBrand: false,
+  printerSpeed: false,
+})
+
+const validateFields = () => {
+  errors.value.printerName = printerName.value === ''
+  errors.value.printerBrand = printerBrand.value === ''
+  errors.value.printerSpeed = printerSpeed.value <= 0 || printerSpeed.value === undefined
+
+  return !errors.value.printerName && !errors.value.printerBrand && !errors.value.printerSpeed
+}
+
+watch(printerName, (newValue) => {
+  if (newValue !== '') errors.value.printerName = false
+})
+watch(printerBrand, (newValue) => {
+  if (newValue !== '') errors.value.printerBrand = false
+})
+watch(printerSpeed, (newValue) => {
+  if (newValue > 0 && newValue !== undefined) errors.value.printerSpeed = false
+})
+
 const createPrinter = async () => {
-  if (printerName.value !== '' && printerBrand.value !== '' && printerSpeed.value !== undefined) {
+  if (validateFields()) {
     printersService
       .postData({
         id: generateIDs(),
@@ -47,12 +72,6 @@ const createPrinter = async () => {
     throw new CustomError('Fill all required fields')
   }
 }
-
-// const render = async () => {}
-
-onMounted(() => {
-  // render()
-})
 
 if (printersData.value.length !== 0) {
   loading.value = false
@@ -83,6 +102,7 @@ watch(printersData, () => {
               required
               placeholder=""
               v-model="printerName"
+              :class="{ 'user-invalid': errors.printerName }"
               id="printerName"
               type="text"
             />
@@ -94,6 +114,7 @@ watch(printersData, () => {
               required
               placeholder=""
               v-model="printerBrand"
+              :class="{ 'user-invalid': errors.printerBrand }"
               id="printerBrand"
               type="text"
             />
@@ -105,6 +126,7 @@ watch(printersData, () => {
               required
               placeholder=""
               v-model="printerSpeed"
+              :class="{ 'user-invalid': errors.printerSpeed }"
               id="printerSpeed"
               type="number"
             />

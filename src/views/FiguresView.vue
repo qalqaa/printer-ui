@@ -24,8 +24,29 @@ const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue
 
 const figureName = ref('')
 const figurePerimeter = ref<number>()
+
+const errors = ref({
+  figureName: false,
+  figurePerimeter: false,
+})
+
+const validateFields = () => {
+  errors.value.figureName = figureName.value === ''
+  errors.value.figurePerimeter = figurePerimeter.value <= 0 || figurePerimeter.value === undefined
+
+  return !errors.value.figureName && !errors.value.figurePerimeter
+}
+
+watch(figureName, (newValue) => {
+  if (newValue !== '') errors.value.figureName = false
+})
+watch(figurePerimeter, (newValue) => {
+  if (newValue > 0 && newValue !== undefined) errors.value.figurePerimeter = false
+})
+
 const createFigure = async () => {
-  if (figureName.value !== '' && figurePerimeter.value !== undefined) {
+  console.log(figurePerimeter.value)
+  if (validateFields()) {
     if (figurePerimeter.value < 0) {
       throw new CustomError("Perimeter can't be negative or null")
     }
@@ -83,6 +104,7 @@ watch(figuresData, () => {
               required
               placeholder=""
               v-model="figureName"
+              :class="{ 'user-invalid': errors.figureName }"
               id="printerName"
               type="text"
             />
@@ -95,6 +117,7 @@ watch(figuresData, () => {
               placeholder=""
               min="0"
               v-model="figurePerimeter"
+              :class="{ 'user-invalid': errors.figurePerimeter }"
               id="printerBrand"
               type="number"
             />

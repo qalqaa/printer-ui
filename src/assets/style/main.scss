@@ -6,6 +6,11 @@
   /* grid-template-rows: repeat(2, 1fr); */
 }
 
+.user-invalid {
+  -webkit-box-shadow: 0 0px 10px var(--error);
+  box-shadow: 0 0px 10px var(--error);
+}
+
 @media (max-width: 1200px) {
   .list {
     grid-template-columns: repeat(2, 1fr);

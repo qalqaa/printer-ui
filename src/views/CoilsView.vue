@@ -24,9 +24,34 @@ const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue
 
 const coilMaterial = ref('')
 const coilColor = ref('')
-const coilLength = ref(0)
+const coilLength = ref<number>()
+
+const errors = ref({
+  coilMaterial: false,
+  coilColor: false,
+  coilLength: false,
+})
+
+const validateFields = () => {
+  errors.value.coilMaterial = coilMaterial.value === ''
+  errors.value.coilColor = coilColor.value === ''
+  errors.value.coilLength = coilLength.value <= 0 || coilLength.value === undefined
+
+  return !errors.value.coilMaterial && !errors.value.coilColor && !errors.value.coilLength
+}
+
+watch(coilMaterial, (newValue) => {
+  if (newValue !== '') errors.value.coilMaterial = false
+})
+watch(coilColor, (newValue) => {
+  if (newValue !== '') errors.value.coilColor = false
+})
+watch(coilLength, (newValue) => {
+  if (newValue > 0 && newValue !== undefined) errors.value.coilLength = false
+})
+
 const createCoil = async () => {
-  if (coilMaterial.value !== '' && coilColor.value !== '' && coilLength.value !== 0) {
+  if (validateFields()) {
     coilsService
       .postData({
         id: generateIDs(),
@@ -69,7 +94,7 @@ watch(coilsData, () => {
         @confirmAction="createCoil"
       >
         <template #content>
-          <h2>Create a new printer</h2>
+          <h2>Create a new coil</h2>
           <div class="input-box">
             <label for="material">Enter material</label>
             <input
@@ -77,6 +102,7 @@ watch(coilsData, () => {
               required
               placeholder=""
               v-model="coilMaterial"
+              :class="{ 'user-invalid': errors.coilMaterial }"
               id="material"
               type="text"
             />
@@ -88,6 +114,7 @@ watch(coilsData, () => {
               required
               placeholder=""
               v-model="coilColor"
+              :class="{ 'user-invalid': errors.coilColor }"
               id="color"
               type="text"
             />
@@ -99,6 +126,7 @@ watch(coilsData, () => {
               required
               placeholder=""
               v-model="coilLength"
+              :class="{ 'user-invalid': errors.coilLength }"
               id="length"
               type="number"
             />
