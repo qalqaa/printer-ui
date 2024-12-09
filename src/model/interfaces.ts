@@ -1,4 +1,4 @@
-import type { Meter } from './types'
+import type { Meter, MillimeterPerSecond } from './types'
 
 export interface ICoil {
   id: string
@@ -13,12 +13,14 @@ export interface IFigure {
   name: string
   perimeter: Meter
   imgUrl?: string
+  isCompleted: boolean
 }
 
 export interface IPrinter {
   id: string
   name: string
   brand: string
+  speed: MillimeterPerSecond
   imgUrl?: string
   coil: ICoil | null
   queue: IFigure[] | null

@@ -67,7 +67,7 @@ const cut = () => {
     <div class="flex flex-column gap-1">
       <p>Material: {{ material }}</p>
       <p>Color: {{ color }}</p>
-      <p>Length: {{ localLength }} m</p>
+      <p>Length: {{ localLength }}m</p>
       <button @click="cuttingModeHandle">Undercut Coil</button>
     </div>
     <img width="100px" :src="imgUrl ? imgUrl : 'coil.png'" alt="coil-image" />

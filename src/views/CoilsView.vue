@@ -25,30 +25,28 @@ const coilColor = ref('')
 const coilLength = ref(0)
 const createCoil = async () => {
   if (coilMaterial.value !== '' && coilColor.value !== '' && coilLength.value !== 0) {
-    coilsService.postData({
-      id: generateIDs(),
-      material: coilMaterial.value,
-      color: coilColor.value,
-      length: coilLength.value,
-      imgUrl: 'coil.png',
-    })
+    coilsService
+      .postData({
+        id: generateIDs(),
+        material: coilMaterial.value,
+        color: coilColor.value,
+        length: coilLength.value,
+        imgUrl: 'coil.png',
+      })
+      .then(() => {
+        getCoilsData()
+      })
   } else {
     console.error('printer name or brand is empty')
   }
-  render()
-}
-
-const render = async () => {
-  getCoilsData()
 }
 
 onMounted(() => {
-  // render()
+  getCoilsData()
+  if (coilsData.value.length === 0) {
+    loading.value = false
+  }
 })
-
-if (coilsData.value.length !== 0) {
-  loading.value = false
-}
 
 watch(coilsData, () => {
   loading.value = false

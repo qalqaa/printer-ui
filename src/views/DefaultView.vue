@@ -2,7 +2,7 @@
 defineProps<{
   title: string
   loading: boolean
-  createHandle: () => void
+  createHandle?: () => void
 }>()
 </script>
 <template>

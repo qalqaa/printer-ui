@@ -2,6 +2,7 @@
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import PrinterList from '@/components/Printer/PrinterList/PrinterList.vue'
 import { printersService } from '@/data/api/api'
+import type { MillimeterPerSecond } from '@/model/types'
 import { generateIDs } from '@/util/generateIDs'
 import { printersKey } from '@/util/injectionKeys'
 import { inject, onMounted, ref, watch } from 'vue'
@@ -20,13 +21,15 @@ const isCreatingModeTrue = ref(false)
 
 const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue.value)
 
-const printerName = ref('')
-const printerBrand = ref('')
+const printerName = ref()
+const printerBrand = ref()
+const printerSpeed = ref<MillimeterPerSecond>()
 const createPrinter = async () => {
-  if (printerName.value !== '' && printerBrand.value !== '') {
+  if (printerName.value !== '' && printerBrand.value !== '' && printerSpeed.value !== undefined) {
     printersService.postData({
       id: generateIDs(),
       name: printerName.value,
+      speed: printerSpeed.value,
       brand: printerBrand.value,
       imgUrl: '3d-printer.png',
       coil: null,
@@ -69,7 +72,7 @@ watch(printersData, () => {
         <template #content>
           <h2>Create a new printer</h2>
           <div class="input-box">
-            <label for="printerName">Enter printer name</label>
+            <label for="printerName">Enter name</label>
             <input
               class="w-full"
               required
@@ -80,7 +83,7 @@ watch(printersData, () => {
             />
           </div>
           <div class="input-box">
-            <label for="printerName">Enter printer brand</label>
+            <label for="printerBrand">Enter brand</label>
             <input
               class="w-full"
               required
@@ -88,6 +91,17 @@ watch(printersData, () => {
               v-model="printerBrand"
               id="printerBrand"
               type="text"
+            />
+          </div>
+          <div class="input-box">
+            <label for="printerSpeed">Enter speed</label>
+            <input
+              class="w-full"
+              required
+              placeholder=""
+              v-model="printerSpeed"
+              id="printerSpeed"
+              type="number"
             />
           </div>
         </template>

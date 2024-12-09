@@ -1,4 +1,5 @@
 import CoilsView from '@/views/CoilsView.vue'
+import CompletedFiguresView from '@/views/CompletedFiguresView.vue'
 import FiguresView from '@/views/FiguresView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 import PrintersView from '@/views/PrintersView.vue'
@@ -26,6 +27,11 @@ const router = createRouter({
       path: '/figure-library',
       name: 'figure-library',
       component: FiguresView,
+    },
+    {
+      path: '/done-figures',
+      name: 'done-figures',
+      component: CompletedFiguresView,
     },
   ],
 })
