@@ -32,8 +32,7 @@ const errors = ref({
 
 const validateFields = () => {
   errors.value.figureName = figureName.value === ''
-  errors.value.figurePerimeter = figurePerimeter.value <= 0 || figurePerimeter.value === undefined
-
+  errors.value.figurePerimeter = figurePerimeter.value === undefined || figurePerimeter.value <= 0
   return !errors.value.figureName && !errors.value.figurePerimeter
 }
 
@@ -41,12 +40,12 @@ watch(figureName, (newValue) => {
   if (newValue !== '') errors.value.figureName = false
 })
 watch(figurePerimeter, (newValue) => {
-  if (newValue > 0 && newValue !== undefined) errors.value.figurePerimeter = false
+  if (newValue !== undefined && newValue > 0) errors.value.figurePerimeter = false
 })
 
 const createFigure = async () => {
   console.log(figurePerimeter.value)
-  if (validateFields()) {
+  if (validateFields() && figurePerimeter.value !== undefined) {
     if (figurePerimeter.value < 0) {
       throw new CustomError("Perimeter can't be negative or null")
     }

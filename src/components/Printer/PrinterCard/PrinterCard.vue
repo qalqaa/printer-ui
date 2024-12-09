@@ -7,7 +7,7 @@ import { CustomError } from '@/model/error/customError'
 import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
 import { coilsKey, figuresKey, printersKey } from '@/util/injectionKeys'
 import { simulateErrors } from '@/util/simulateErrors'
-import { computed, inject, ref } from 'vue'
+import { computed, inject, ref, watch } from 'vue'
 import ProgressBar from '../ProgressBar/ProgressBar.vue'
 
 const props = defineProps<IPrinter>()
@@ -31,8 +31,37 @@ const incompleteFigures = computed(() => {
 
 const isRefillMode = ref(false)
 const isQueueMode = ref(false)
+const isEditingMode = ref(false)
 const selectedCoil = ref<ICoil | 'placeholder'>('placeholder')
 const selectedFigure = ref<IFigure | 'placeholder'>('placeholder')
+
+const printerName = ref(props.name)
+const printerBrand = ref(props.brand)
+const printerSpeed = ref(props.speed)
+
+const errors = ref({
+  printerName: false,
+  printerBrand: false,
+  printerSpeed: false,
+})
+
+const validateFields = () => {
+  errors.value.printerName = printerName.value === ''
+  errors.value.printerBrand = printerBrand.value === ''
+  errors.value.printerSpeed = printerSpeed.value <= 0 || printerSpeed.value === undefined
+
+  return !errors.value.printerName && !errors.value.printerBrand && !errors.value.printerSpeed
+}
+
+watch(printerName, (newValue) => {
+  if (newValue !== '') errors.value.printerName = false
+})
+watch(printerBrand, (newValue) => {
+  if (newValue !== '') errors.value.printerBrand = false
+})
+watch(printerSpeed, (newValue) => {
+  if (newValue > 0 && newValue !== undefined) errors.value.printerSpeed = false
+})
 
 const queueHandle = () => {
   if (incompleteFigures.value.length === 0) {
@@ -46,6 +75,29 @@ const refillHandle = () => {
     throw new CustomError('No coils, create at least one in coils tab')
   }
   isRefillMode.value = !isRefillMode.value
+}
+
+const editHandle = () => {
+  isEditingMode.value = !isEditingMode.value
+}
+
+const editPrinter = () => {
+  if (validateFields()) {
+    printersService
+      .updateData(props.id, {
+        ...props,
+        name: printerName.value,
+        brand: printerBrand.value,
+        speed: printerSpeed.value,
+      })
+      .then(() => {
+        getPrintersData()
+      })
+    toastInstance.addToast('Printer edited!', 'success')
+  } else {
+    isEditingMode.value = false
+    throw new CustomError('Invalid fields')
+  }
 }
 
 const addToQueue = () => {
@@ -169,12 +221,50 @@ const print = (): void => {
     }
   }, onePercentTime)
 }
+
+const deletePrinter = () => {
+  printersService.deleteData(props.id).then(() => {
+    getPrintersData()
+  })
+}
 </script>
 
 <template>
   <li
-    class="flex flex-column shadow-5 p-4 border-round-lg bg-color-soft gap-2 justify-content-between"
+    class="flex flex-column shadow-5 p-4 border-round-lg bg-color-soft gap-2 justify-content-between relative"
   >
+    <button @click="deletePrinter" class="absolute pt-2 top-0 right-0 m-2">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-trash"
+        viewBox="0 0 16 16"
+      >
+        <path
+          d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"
+        />
+        <path
+          d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
+        />
+      </svg>
+      <!-- Да, да знаю, что нельзя, но пощадите пожалуйста, пол второго ночи -->
+    </button>
+    <button @click="editHandle" class="absolute pt-2 top-0 right-0 m-2 mr-6">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        fill="currentColor"
+        class="bi bi-pen-fill"
+        viewBox="0 0 16 16"
+      >
+        <path
+          d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001"
+        />
+      </svg>
+    </button>
     <div class="flex flex-column gap-2">
       <img class="w-7 mx-auto" :src="imgUrl" alt="printer_image" />
       <h2>{{ name }} from {{ brand }}</h2>
@@ -226,6 +316,48 @@ const print = (): void => {
           :label="item.name + ', ' + item.perimeter + 'm'"
         ></option>
       </select>
+    </template>
+  </DialogWindow>
+  <DialogWindow :isOpen="isEditingMode" @close="editHandle" :onConfirmAction="editPrinter">
+    <template #content>
+      <h2>Edit a {{ name }}</h2>
+      <div class="input-box">
+        <label for="printerName">Enter name</label>
+        <input
+          class="w-full"
+          required
+          placeholder=""
+          maxlength="10"
+          v-model="printerName"
+          :class="{ 'user-invalid': errors.printerName }"
+          id="printerName"
+          type="text"
+        />
+      </div>
+      <div class="input-box">
+        <label for="printerBrand">Enter brand</label>
+        <input
+          class="w-full"
+          required
+          placeholder=""
+          v-model="printerBrand"
+          :class="{ 'user-invalid': errors.printerBrand }"
+          id="printerBrand"
+          type="text"
+        />
+      </div>
+      <div class="input-box">
+        <label for="printerSpeed">Enter speed</label>
+        <input
+          class="w-full"
+          required
+          placeholder=""
+          v-model="printerSpeed"
+          :class="{ 'user-invalid': errors.printerSpeed }"
+          id="printerSpeed"
+          type="number"
+        />
+      </div>
     </template>
   </DialogWindow>
 </template>

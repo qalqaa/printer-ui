@@ -35,7 +35,7 @@ const errors = ref({
 const validateFields = () => {
   errors.value.coilMaterial = coilMaterial.value === ''
   errors.value.coilColor = coilColor.value === ''
-  errors.value.coilLength = coilLength.value <= 0 || coilLength.value === undefined
+  errors.value.coilLength = coilLength.value === undefined || coilLength.value <= 0
 
   return !errors.value.coilMaterial && !errors.value.coilColor && !errors.value.coilLength
 }
@@ -47,11 +47,11 @@ watch(coilColor, (newValue) => {
   if (newValue !== '') errors.value.coilColor = false
 })
 watch(coilLength, (newValue) => {
-  if (newValue > 0 && newValue !== undefined) errors.value.coilLength = false
+  if (newValue !== undefined && newValue > 0) errors.value.coilLength = false
 })
 
 const createCoil = async () => {
-  if (validateFields()) {
+  if (validateFields() && coilLength.value !== undefined) {
     coilsService
       .postData({
         id: generateIDs(),

@@ -90,6 +90,11 @@ const router = useRouter()
   </header>
   <div></div>
   <RouterView />
+  <footer
+    class="fixed bottom-0 p-2 w-full flex justify-content-center align-items-center bg-color-soft"
+  >
+    <p>© qalqa - Бастун Андрей Артемович 231-323</p>
+  </footer>
 </template>
 
 <style></style>
