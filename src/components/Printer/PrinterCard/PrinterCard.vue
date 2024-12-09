@@ -2,8 +2,11 @@
 import CoilCard from '@/components/Coil/card/CoilCard.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import { coilsService, figuresService, printersService } from '@/data/api/api'
+import { toastInstance } from '@/main'
+import { CustomError } from '@/model/error/customError'
 import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
 import { coilsKey, figuresKey, printersKey } from '@/util/injectionKeys'
+import { simulateErrors } from '@/util/simulateErrors'
 import { computed, inject, ref } from 'vue'
 import ProgressBar from '../ProgressBar/ProgressBar.vue'
 
@@ -33,16 +36,14 @@ const selectedFigure = ref<IFigure | 'placeholder'>('placeholder')
 
 const queueHandle = () => {
   if (incompleteFigures.value.length === 0) {
-    console.error('no figures')
-    return
+    throw new CustomError('No figures in queue')
   }
   isQueueMode.value = !isQueueMode.value
 }
 
 const refillHandle = () => {
   if (coilsData.value.length === 0) {
-    console.error('no coils')
-    return
+    throw new CustomError('No coils, create at least one in coils tab')
   }
   isRefillMode.value = !isRefillMode.value
 }
@@ -57,6 +58,7 @@ const addToQueue = () => {
         queue: [...props.queue, selectedFigure.value],
       })
     }
+    toastInstance.addToast(`${selectedFigure.value.name} added to queue!`, 'success')
     figuresService.deleteData(selectedFigure.value.id).then(() => {
       getPrintersData()
       getFiguresData()
@@ -64,7 +66,7 @@ const addToQueue = () => {
 
     return
   }
-  console.error('choose a figure')
+  throw new CustomError('Choose a figure!')
 }
 
 const refill = () => {
@@ -73,40 +75,78 @@ const refill = () => {
     coilsService.deleteData(selectedCoil.value.id).then(() => {
       getPrintersData()
     })
+    toastInstance.addToast('Coil refilled!', 'success')
     return
   }
-  console.error('choose a coil')
+  throw new CustomError('Choose a coil!')
 }
 
 const progress = ref(0)
 
-const print = () => {
-  if (props.queue === null) {
-    console.error('no figures in queue')
-    return
+const print = (): void => {
+  if (!props.queue || props.queue.length === 0) {
+    throw new CustomError('No figures in queue')
   }
-  if (props.coil === null || !props.coil) {
-    console.error('no coil')
-    return
+
+  if (!props.coil) {
+    throw new CustomError('No coil inside printer, first refill it')
   }
-  isPrinting.value = !isPrinting.value
-  const perimeterPrintedFigure = props.queue[0].perimeter
+
+  isPrinting.value = true
+  const currentFigure = props.queue[0]
+  const perimeterPrintedFigure = currentFigure.perimeter
   const onePercentTime = (perimeterPrintedFigure * 10000) / props.speed
-  if (props.coil.length < perimeterPrintedFigure) {
-    console.error('coil is too short')
-    return
+
+  if (!props.coil || props.coil.length < perimeterPrintedFigure) {
+    throw new CustomError('Coil is too short')
   }
+
   const timer = setInterval(() => {
+    const error = simulateErrors(progress.value)
+
+    if (error) {
+      clearInterval(timer)
+      isPrinting.value = false
+
+      switch (error.type) {
+        case 'thread':
+          toastInstance.addToast(error.message, 'error')
+          return
+
+        case 'nozzle':
+          progress.value = 0
+          toastInstance.addToast(error.message, 'error')
+          if (!props.queue) return
+          printersService
+            .updateData(props.id, {
+              ...props,
+              queue: props.queue.slice(1),
+            })
+            .then(() => {
+              getPrintersData()
+            })
+          return
+
+        case 'electricity':
+          toastInstance.addToast(error.message, 'error')
+          return
+      }
+    }
+
     if (progress.value < 100) {
       progress.value++
     } else {
-      if (!props.coil || !props.queue) {
+      if (!props.coil || !props.queue || props.queue.length === 0) {
         return
       }
+
+      toastInstance.addToast(`${currentFigure.name} is printed!`, 'success')
+
       figuresService.postData({
-        ...props.queue[0],
+        ...currentFigure,
         isCompleted: true,
       })
+
       printersService
         .updateData(props.id, {
           ...props,
@@ -116,13 +156,15 @@ const print = () => {
         .then(() => {
           getPrintersData().then(() => {
             getCoilsData()
-          })
-          clearInterval(timer)
-          isPrinting.value = !isPrinting.value
-          if (props.queue && props.queue.length > 1) {
+            clearInterval(timer)
+            isPrinting.value = false
+
+            if (props.queue!.length > 0) {
+              progress.value = 0
+              print()
+            }
             progress.value = 0
-            print()
-          }
+          })
         })
     }
   }, onePercentTime)
@@ -157,7 +199,7 @@ const print = () => {
       <p>Print Speed: {{ speed }}mm/s</p>
       <p>Print status: {{ isPrinting ? `printing... ` + progress + '%' : 'offline' }}</p>
       <ProgressBar :progress="progress" />
-      <button @click="print">Print</button>
+      <button :class="{ disabled: isPrinting }" :disabled="isPrinting" @click="print">Print</button>
     </div>
   </li>
   <DialogWindow :isOpen="isRefillMode" @close="refillHandle" :onConfirmAction="refill">
@@ -188,4 +230,14 @@ const print = () => {
   </DialogWindow>
 </template>
 
-<style></style>
+<style>
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.disabled:hover {
+  box-shadow: none;
+  text-shadow: none;
+}
+</style>

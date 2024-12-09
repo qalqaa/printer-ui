@@ -2,6 +2,8 @@
 import CoilList from '@/components/Coil/list/CoilList.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import { coilsService } from '@/data/api/api'
+import { toastInstance } from '@/main'
+import { CustomError } from '@/model/error/customError'
 import { generateIDs } from '@/util/generateIDs'
 import { coilsKey } from '@/util/injectionKeys'
 import { inject, onMounted, ref, watch } from 'vue'
@@ -36,8 +38,10 @@ const createCoil = async () => {
       .then(() => {
         getCoilsData()
       })
+    toastInstance.addToast('Coil created', 'success')
   } else {
-    console.error('printer name or brand is empty')
+    isCreatingModeTrue.value = false
+    throw new CustomError('Fill all required fields')
   }
 }
 

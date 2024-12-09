@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
-import { fetchRequest } from '@/data/api/api'
+import { coilsService, printersService } from '@/data/api/api'
+import { toastInstance } from '@/main'
 import type { ICoil, IPrinter } from '@/model/interfaces'
 import { ref } from 'vue'
 
@@ -17,20 +18,14 @@ const cut = () => {
   if (cutLength.value >= localLength.value) {
     localLength.value = 0
     if (props.printerProps) {
-      fetchRequest<ICoil>({
-        url: `/printers/${props.printerProps.id}`,
-        method: 'PUT',
-        data: {
-          ...props.printerProps,
-          coil: null,
-        },
+      printersService.updateData(props.printerProps.id, {
+        ...props.printerProps,
+        coil: null,
       })
+      toastInstance.addToast(`Coil is cutted`, 'success')
       return
     }
-    fetchRequest<ICoil>({
-      url: `/coils/${props.id}`,
-      method: 'DELETE',
-    })
+    coilsService.deleteData(props.id)
     return
   }
 
@@ -38,24 +33,15 @@ const cut = () => {
   if (props.printerProps) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { printerProps, length, ...filteredProps } = props
-    fetchRequest<ICoil>({
-      url: `/printers/${props.printerProps.id}`,
-      method: 'PUT',
-      data: {
-        ...props.printerProps,
-        coil: { ...filteredProps, length: localLength.value },
-      },
+    printersService.updateData(props.printerProps.id, {
+      ...props.printerProps,
+      coil: { ...filteredProps, length: localLength.value },
     })
+    toastInstance.addToast(`Coil is cutted`, 'success')
     return
   }
-  fetchRequest<ICoil>({
-    url: `/pasteCoils/${props.id}`,
-    method: 'PUT',
-    data: {
-      ...props,
-      length: localLength.value,
-    },
-  })
+  coilsService.updateData(props.id, { ...props, length: localLength.value })
+  toastInstance.addToast(`Coil is cutted`, 'success')
 }
 </script>
 

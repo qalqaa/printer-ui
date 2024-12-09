@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { figuresService } from '@/data/api/api'
+import { toastInstance } from '@/main'
 import type { IFigure, IPrinter } from '@/model/interfaces'
 import { figuresKey } from '@/util/injectionKeys'
 import { inject } from 'vue'
@@ -13,6 +14,7 @@ const { getFiguresData } = figure
 
 const props = defineProps<IFigure & { printerProps?: IPrinter }>()
 const deleteFigure = () => {
+  toastInstance.addToast(`${props.name} deleted!`, 'warning')
   figuresService.deleteData(props.id).then(() => {
     getFiguresData()
   })
