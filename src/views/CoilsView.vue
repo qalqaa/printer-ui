@@ -85,7 +85,7 @@ watch(coilsData, () => {
   <DefaultView title="Coils" :loading :create-handle="creatingModeHandle">
     <template #list>
       <CoilList v-if="coilsData.length !== 0" :items="coilsData" />
-      <p v-else>No figures found</p>
+      <p v-else>No coils found 😢</p>
     </template>
     <template #dialog>
       <DialogWindow

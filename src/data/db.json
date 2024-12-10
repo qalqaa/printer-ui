@@ -28,28 +28,14 @@
       "imgUrl": "LenovoPrinter.png"
     }
   ],
-  "coils": [],
-  "figures": [
+  "coils": [
     {
-      "id": "whv7l4q",
-      "isCompleted": true,
-      "name": "Benchy",
-      "perimeter": 5,
-      "imgUrl": "figure.png"
-    },
-    {
-      "id": "5bn4v2r",
-      "isCompleted": true,
-      "name": "BigBenchy",
-      "perimeter": 3,
-      "imgUrl": "figure.png"
-    },
-    {
-      "id": "j1el8q8",
-      "isCompleted": true,
-      "name": "benchy",
-      "perimeter": 3,
-      "imgUrl": "figure.png"
+      "id": "z3q6548",
+      "material": "213",
+      "color": "213",
+      "length": 213,
+      "imgUrl": "coil.png"
     }
-  ]
+  ],
+  "figures": []
 }

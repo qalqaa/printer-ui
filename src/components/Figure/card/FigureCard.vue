@@ -109,7 +109,7 @@ const deleteFigure = () => {
       <h2>{{ name }}</h2>
       <p>Perimeter: {{ perimeter }}m</p>
       <div :class="{ disabled: isPrinting }" v-if="!isCompleted" class="flex flex-row gap-2">
-        <button @click="editModeHandle">
+        <button class="pt-2" @click="editModeHandle">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -123,7 +123,7 @@ const deleteFigure = () => {
             />
           </svg>
         </button>
-        <button @click="deleteFigure">
+        <button class="pt-2" @click="deleteFigure">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"

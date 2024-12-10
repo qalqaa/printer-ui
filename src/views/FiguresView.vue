@@ -86,7 +86,7 @@ watch(figuresData, () => {
   <DefaultView title="Figures" :loading="loading" :create-handle="creatingModeHandle">
     <template #list>
       <FigureList v-if="incompleteFigures.length !== 0" :items="incompleteFigures" />
-      <p v-else>No figures found</p>
+      <p v-else>No figures found 😫</p>
     </template>
     <template #dialog>
       <DialogWindow
