@@ -2,8 +2,6 @@
 const props = defineProps<{
   progress: number
 }>()
-
-// const computedWidth = computed(() => `${props.progress}%`)
 </script>
 
 <template>
