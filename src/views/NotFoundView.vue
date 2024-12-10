@@ -3,7 +3,7 @@
     <div class="error-box flex flex-column gap-2">
       <div class="flex gap-2">
         <h2 class="title">Error 404</h2>
-        <img width="50" src="/public/warrning.svg" alt="warning-icon" />
+        <img width="50" src="/warrning.svg" alt="warning-icon" />
       </div>
       <p>Oops... Page not found</p>
       <button @click="$router.push('/')">Go to home, kid</button>
