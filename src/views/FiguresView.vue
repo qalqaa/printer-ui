@@ -60,7 +60,7 @@ const createFigure = async () => {
       .then(() => {
         getFiguresData()
       })
-    toastInstance.addToast('Coil created', 'success')
+    toastInstance.addToast(figureName.value + ' created!', 'success')
   } else {
     isCreatingModeTrue.value = false
     throw new CustomError('Fill all required fields')

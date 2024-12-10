@@ -7,7 +7,7 @@ import type { ICoil, IPrinter } from '@/model/interfaces'
 import { coilsKey, printersKey } from '@/util/injectionKeys'
 import { inject, ref, watch } from 'vue'
 
-const props = defineProps<ICoil & { printerProps?: IPrinter }>()
+const props = defineProps<ICoil & { printerProps?: IPrinter } & { isPrinting?: boolean }>()
 
 const coilMaterial = ref(props.material)
 const coilColor = ref(props.color)
@@ -95,6 +95,7 @@ const editCoil = () => {
 const cuttingModeHandle = () => (isCuttingMode.value = !isCuttingMode.value)
 
 const deleteCoil = () => {
+  toastInstance.addToast(`Coil is Deleted`, 'warning')
   if (props.printerProps) {
     printersService
       .updateData(props.printerProps.id, {
@@ -106,7 +107,6 @@ const deleteCoil = () => {
       })
     return
   }
-  toastInstance.addToast(`Coil is Deleted`, 'warning')
   coilsService.deleteData(props.id).then(() => {
     getCoilsData()
   })
@@ -144,14 +144,14 @@ const cut = () => {
 </script>
 
 <template>
-  <div
+  <li
     class="flex flex-row gap-4 justify-content-between bg-color-soft p-4 border-round-xl shadow-5 relative"
   >
     <div class="flex flex-column gap-1">
       <p>Material: {{ material }}</p>
       <p>Color: {{ color }}</p>
       <p>Length: {{ length }}m</p>
-      <div class="flex flex-row gap-2">
+      <div :class="{ disabled: isPrinting }" class="flex flex-row gap-2">
         <button @click="cuttingModeHandle">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -200,7 +200,7 @@ const cut = () => {
       </div>
     </div>
     <img width="100px" :src="imgUrl ? imgUrl : 'coil.png'" alt="coil-image" />
-  </div>
+  </li>
   <DialogWindow :isOpen="isCuttingMode" @close="cuttingModeHandle" @confirm-action="cut()">
     <template #content>
       <p>Length: {{ coilLength }} m</p>

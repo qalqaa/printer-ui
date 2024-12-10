@@ -5,44 +5,8 @@
       "name": "Iprinter",
       "brand": "Apple",
       "speed": 100,
-      "coil": {
-        "printerProps": {
-          "id": "bfxyqee",
-          "name": "Iprinter",
-          "brand": "Apple",
-          "speed": 100,
-          "coil": {
-            "id": "adoho5a",
-            "material": "pba",
-            "color": "red",
-            "length": 100,
-            "imgUrl": "coil.png"
-          },
-          "queue": [
-            {
-              "id": "e3reori",
-              "name": "Benchy",
-              "perimeter": 101,
-              "imgUrl": "figure.png",
-              "isCompleted": false
-            }
-          ],
-          "imgUrl": "Iprinter.png"
-        },
-        "id": "adoho5a",
-        "material": "pba",
-        "color": "red",
-        "length": 1001
-      },
-      "queue": [
-        {
-          "id": "e3reori",
-          "name": "Benchy",
-          "perimeter": 101,
-          "imgUrl": "figure.png",
-          "isCompleted": false
-        }
-      ],
+      "coil": null,
+      "queue": [],
       "imgUrl": "Iprinter.png"
     },
     {
@@ -62,17 +26,30 @@
       "coil": null,
       "queue": [],
       "imgUrl": "LenovoPrinter.png"
-    },
-    {
-      "id": "e4o6zs4",
-      "name": "asd",
-      "speed": 111,
-      "brand": "asd",
-      "imgUrl": "3d-printer.png",
-      "coil": null,
-      "queue": []
     }
   ],
   "coils": [],
-  "figures": []
+  "figures": [
+    {
+      "id": "whv7l4q",
+      "isCompleted": true,
+      "name": "Benchy",
+      "perimeter": 5,
+      "imgUrl": "figure.png"
+    },
+    {
+      "id": "5bn4v2r",
+      "isCompleted": true,
+      "name": "BigBenchy",
+      "perimeter": 3,
+      "imgUrl": "figure.png"
+    },
+    {
+      "id": "j1el8q8",
+      "isCompleted": true,
+      "name": "benchy",
+      "perimeter": 3,
+      "imgUrl": "figure.png"
+    }
+  ]
 }

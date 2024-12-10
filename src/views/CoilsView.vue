@@ -63,7 +63,7 @@ const createCoil = async () => {
       .then(() => {
         getCoilsData()
       })
-    toastInstance.addToast('Coil created', 'success')
+    toastInstance.addToast('Coil created!', 'success')
   } else {
     isCreatingModeTrue.value = false
     throw new CustomError('Fill all required fields')

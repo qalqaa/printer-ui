@@ -11,6 +11,17 @@
   box-shadow: 0 0px 10px var(--error);
 }
 
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.disabled:hover {
+  box-shadow: none;
+  text-shadow: none;
+}
+
 @media (max-width: 1200px) {
   .list {
     grid-template-columns: repeat(2, 1fr);

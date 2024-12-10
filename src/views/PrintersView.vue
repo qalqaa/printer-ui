@@ -3,12 +3,12 @@ import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import PrinterList from '@/components/Printer/PrinterList/PrinterList.vue'
 import { printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
+import { CustomError } from '@/model/error/customError'
 import type { MillimeterPerSecond } from '@/model/types'
 import { generateIDs } from '@/util/generateIDs'
 import { printersKey } from '@/util/injectionKeys'
 import { inject, ref, watch } from 'vue'
 import DefaultView from './DefaultView.vue'
-import { CustomError } from '@/model/error/customError'
 
 const printers = inject(printersKey)
 
@@ -36,7 +36,7 @@ const errors = ref({
 const validateFields = () => {
   errors.value.printerName = printerName.value === ''
   errors.value.printerBrand = printerBrand.value === ''
-  errors.value.printerSpeed = printerSpeed.value <= 0 || printerSpeed.value === undefined
+  errors.value.printerSpeed = printerSpeed.value === undefined || printerSpeed.value <= 0
 
   return !errors.value.printerName && !errors.value.printerBrand && !errors.value.printerSpeed
 }
@@ -48,11 +48,11 @@ watch(printerBrand, (newValue) => {
   if (newValue !== '') errors.value.printerBrand = false
 })
 watch(printerSpeed, (newValue) => {
-  if (newValue > 0 && newValue !== undefined) errors.value.printerSpeed = false
+  if (newValue !== undefined && newValue > 0) errors.value.printerSpeed = false
 })
 
 const createPrinter = async () => {
-  if (validateFields()) {
+  if (validateFields() && printerSpeed.value !== undefined) {
     printersService
       .postData({
         id: generateIDs(),
@@ -66,7 +66,7 @@ const createPrinter = async () => {
       .then(() => {
         getPrintersData()
       })
-    toastInstance.addToast('Printer created', 'success')
+    toastInstance.addToast(printerName.value + ' created', 'success')
   } else {
     isCreatingModeTrue.value = false
     throw new CustomError('Fill all required fields')

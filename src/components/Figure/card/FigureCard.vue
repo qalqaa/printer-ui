@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
-import { figuresService } from '@/data/api/api'
+import { figuresService, printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
-import type { IFigure } from '@/model/interfaces'
-import { figuresKey } from '@/util/injectionKeys'
+import type { IFigure, IPrinter } from '@/model/interfaces'
+import { figuresKey, printersKey } from '@/util/injectionKeys'
 import { inject, ref, watch } from 'vue'
 
 const figure = inject(figuresKey)
+const printers = inject(printersKey)
 
-if (!figure) {
+if (!figure || !printers) {
   throw new Error('Service is not provided')
 }
-const props = defineProps<IFigure>()
+const props = defineProps<IFigure & { printerProps?: IPrinter } & { isPrinting?: boolean }>()
 
 const { getFiguresData } = figure
+const { getPrintersData } = printers
 
 const figureName = ref(props.name)
 const figurePerimeter = ref(props.perimeter)
@@ -41,6 +43,27 @@ watch(figurePerimeter, (newValue) => {
 })
 
 const editFigure = () => {
+  if (props.printerProps) {
+    if (props.printerProps.queue) {
+      printersService
+        .updateData(props.printerProps.id, {
+          ...props.printerProps,
+          queue: [
+            ...props.printerProps.queue.map((item) => {
+              if (item.id === props.id) {
+                return { ...item, name: figureName.value, perimeter: figurePerimeter.value }
+              }
+              return item
+            }),
+          ],
+        })
+        .then(() => {
+          toastInstance.addToast(`${props.name} edited!`, 'success')
+          getPrintersData()
+        })
+    }
+    return
+  }
   if (validateFields()) {
     figuresService
       .updateData(props.id, {
@@ -59,6 +82,19 @@ const editFigure = () => {
 
 const deleteFigure = () => {
   toastInstance.addToast(`${props.name} deleted!`, 'warning')
+  if (props.printerProps) {
+    if (props.printerProps.queue) {
+      printersService
+        .updateData(props.printerProps.id, {
+          ...props.printerProps,
+          queue: props.printerProps.queue.filter((item) => item.id !== props.id),
+        })
+        .then(() => {
+          getPrintersData()
+        })
+    }
+    return
+  }
   figuresService.deleteData(props.id).then(() => {
     getFiguresData()
   })
@@ -66,13 +102,13 @@ const deleteFigure = () => {
 </script>
 
 <template>
-  <div
+  <li
     class="flex flex-row gap-4 justify-content-between bg-color-soft p-4 border-round-xl shadow-5 relative"
   >
     <div class="flex flex-column gap-1">
       <h2>{{ name }}</h2>
       <p>Perimeter: {{ perimeter }}m</p>
-      <div v-if="!isCompleted" class="flex flex-row gap-2">
+      <div :class="{ disabled: isPrinting }" v-if="!isCompleted" class="flex flex-row gap-2">
         <button @click="editModeHandle">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -108,7 +144,7 @@ const deleteFigure = () => {
     </div>
 
     <img width="100px" :src="imgUrl ? imgUrl : 'figure.png'" alt="figure-image" />
-  </div>
+  </li>
   <DialogWindow :isOpen="isEditMode" @close="editModeHandle" @confirmAction="editFigure">
     <template #content>
       <h2>Edit a {{ name }}</h2>
@@ -143,5 +179,10 @@ const deleteFigure = () => {
 <style>
 .blur {
   backdrop-filter: blur(10px);
+}
+
+ul {
+  padding: 0;
+  list-style-type: none;
 }
 </style>

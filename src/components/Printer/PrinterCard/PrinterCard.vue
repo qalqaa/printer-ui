@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CoilCard from '@/components/Coil/card/CoilCard.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
+import FigureCard from '@/components/Figure/card/FigureCard.vue'
 import { coilsService, figuresService, printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
@@ -65,7 +66,7 @@ watch(printerSpeed, (newValue) => {
 
 const queueHandle = () => {
   if (incompleteFigures.value.length === 0) {
-    throw new CustomError('No figures in queue')
+    throw new CustomError('No figures, create at least one in figures tab')
   }
   isQueueMode.value = !isQueueMode.value
 }
@@ -225,6 +226,7 @@ const print = (): void => {
 
 const deletePrinter = () => {
   printersService.deleteData(props.id).then(() => {
+    toastInstance.addToast(props.name + ' deleted!', 'warning')
     getPrintersData()
   })
 }
@@ -234,7 +236,11 @@ const deletePrinter = () => {
   <li
     class="flex flex-column shadow-5 p-4 border-round-lg bg-color-soft gap-2 justify-content-between relative"
   >
-    <button @click="deletePrinter" class="absolute pt-2 top-0 right-0 m-2">
+    <button
+      :class="{ disabled: isPrinting }"
+      @click="deletePrinter"
+      class="absolute pt-2 top-0 right-0 m-2"
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -252,7 +258,11 @@ const deletePrinter = () => {
       </svg>
       <!-- Да, да знаю, что нельзя, но пощадите пожалуйста, пол второго ночи -->
     </button>
-    <button @click="editHandle" class="absolute pt-2 top-0 right-0 m-2 mr-6">
+    <button
+      :class="{ disabled: isPrinting }"
+      @click="editHandle"
+      class="absolute pt-2 top-0 right-0 m-2 mr-6"
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -273,7 +283,7 @@ const deletePrinter = () => {
       <div class="flex" v-if="!coil">
         <button @click="refillHandle" class="inverted w-full">Add coil</button>
       </div>
-      <div v-else class="bg-red flex flex-column px-2 py-3 border-round-lg">
+      <ul v-else class="flex flex-column px-2 py-3 border-round-lg">
         <h3 class="c-accent">Coil</h3>
         <CoilCard
           :printer-props="props"
@@ -281,12 +291,24 @@ const deletePrinter = () => {
           :material="coil.material"
           :color="coil.color"
           :length="coil.length"
+          :is-printing="isPrinting"
         />
-      </div>
-    </div>
-    <div class="flex flex-column gap-2">
-      <p v-if="queue?.length">Queue: {{ queue?.map((item) => item.name).join(', ') }}</p>
-      <button @click="queueHandle">Add to queue</button>
+      </ul>
+
+      <ul class="flex flex-column px-2 py-3 border-round-lg gap-2" v-if="queue?.length">
+        <h3 class="c-accent">Queue</h3>
+        <FigureCard
+          v-for="item in queue"
+          :key="item.id"
+          :id="item.id"
+          :name="item.name"
+          :perimeter="item.perimeter"
+          :is-completed="item.isCompleted"
+          :printer-props="props"
+          :is-printing="isPrinting"
+        />
+      </ul>
+      <button :class="{ disabled: isPrinting }" @click="queueHandle">Add to queue</button>
       <p>Print Speed: {{ speed }}mm/s</p>
       <p>Print status: {{ isPrinting ? `printing... ` + progress + '%' : 'offline' }}</p>
       <ProgressBar :progress="progress" />
@@ -362,15 +384,3 @@ const deletePrinter = () => {
     </template>
   </DialogWindow>
 </template>
-
-<style>
-.disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.disabled:hover {
-  box-shadow: none;
-  text-shadow: none;
-}
-</style>
