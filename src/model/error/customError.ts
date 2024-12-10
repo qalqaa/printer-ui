@@ -2,9 +2,12 @@ export class CustomError extends Error {
   status: 'error' | 'success' | 'warning'
 
   constructor(message: string, status: 'error' | 'success' | 'warning' = 'error') {
-    super(message)
+    super(message) // Важно: super() должен быть вызван первым
     this.name = 'CustomError'
     this.status = status
+
+    // Это необходимо для совместимости с транспилером TypeScript
+    Object.setPrototypeOf(this, CustomError.prototype)
   }
 }
 

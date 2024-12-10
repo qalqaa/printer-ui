@@ -5,8 +5,22 @@
       "name": "Iprinter",
       "brand": "Apple",
       "speed": 100,
-      "coil": null,
-      "queue": [],
+      "coil": {
+        "id": "ix8rinu",
+        "material": "Plastic",
+        "color": "red",
+        "length": 2000,
+        "imgUrl": "coil.png"
+      },
+      "queue": [
+        {
+          "id": "cbjy4e7",
+          "isCompleted": false,
+          "name": "Test 1",
+          "perimeter": 100,
+          "imgUrl": "figure.png"
+        }
+      ],
       "imgUrl": "Iprinter.png"
     },
     {
@@ -30,11 +44,12 @@
   ],
   "coils": [
     {
-      "id": "z3q6548",
-      "material": "213",
-      "color": "213",
-      "length": 213,
-      "imgUrl": "coil.png"
+      "id": "dcf2wjh",
+      "material": "123",
+      "color": "123",
+      "length": 103,
+      "imgUrl": "coil.png",
+      "isPrinting": false
     }
   ],
   "figures": []

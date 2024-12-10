@@ -123,6 +123,12 @@ const addToQueue = () => {
 }
 
 const refill = () => {
+  if (isPrinting.value) {
+    throw new CustomError('Cannot remove coil while printing')
+  }
+  if (props.coil) {
+    throw new CustomError('Coil is already installed')
+  }
   if (selectedCoil.value !== 'placeholder') {
     printersService.updateData(props.id, { ...props, coil: selectedCoil.value })
     coilsService.deleteData(selectedCoil.value.id).then(() => {

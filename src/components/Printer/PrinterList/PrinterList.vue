@@ -17,5 +17,3 @@ defineProps<{ items: IPrinter[] }>()
     />
   </ul>
 </template>
-
-<style></style>

@@ -96,5 +96,3 @@ const router = useRouter()
     <p>© qalqa - Бастун Андрей Артемович 231-323</p>
   </footer>
 </template>
-
-<style></style>

@@ -113,20 +113,21 @@ const deleteCoil = () => {
 }
 
 const cut = () => {
+  if (cutLength.value <= 0) {
+    throw new CustomError('Cut length must be bigger than 0')
+  }
   if (cutLength.value >= coilLength.value) {
     coilLength.value = 0
-    if (props.printerProps) {
-      printersService.updateData(props.printerProps.id, {
-        ...props.printerProps,
-        coil: null,
-      })
-      toastInstance.addToast(`Coil is cutted`, 'success')
-      return
-    }
     coilsService.deleteData(props.id)
-    return
+    throw new CustomError('Cut length is bigger than coil length')
   }
-
+  if (props.printerProps) {
+    printersService.updateData(props.printerProps.id, {
+      ...props.printerProps,
+      coil: null,
+    })
+    toastInstance.addToast(`Coil is cutted`, 'success')
+  }
   coilLength.value -= cutLength.value
   if (props.printerProps) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -138,7 +139,9 @@ const cut = () => {
     toastInstance.addToast(`Coil is cutted`, 'success')
     return
   }
-  coilsService.updateData(props.id, { ...props, length: coilLength.value })
+  coilsService.updateData(props.id, { ...props, length: coilLength.value }).then(() => {
+    getCoilsData()
+  })
   toastInstance.addToast(`Coil is cutted`, 'success')
 }
 </script>
