@@ -51,11 +51,13 @@ const editCoil = () => {
   toastInstance.addToast('Coil edited!', 'success')
   if (props.printerProps) {
     if (validateFields()) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { printerProps, isPrinting, length, ...filteredProps } = props
       printersService
         .updateData(props.printerProps.id, {
           ...props.printerProps,
           coil: {
-            ...props,
+            ...filteredProps,
             material: fields.coilMaterial.value,
             color: fields.coilColor.value,
             length: fields.coilLength.value,
@@ -64,24 +66,25 @@ const editCoil = () => {
         .then(() => {
           getPrintersData()
         })
-      return
     } else {
       throw new CustomError('Invalid fields')
     }
-  }
-  if (validateFields()) {
-    coilsService
-      .updateData(props.id, {
-        ...props,
-        material: fields.coilMaterial.value,
-        color: fields.coilColor.value,
-        length: fields.coilLength.value,
-      })
-      .then(() => {
-        getCoilsData()
-      })
+    return
   } else {
-    throw new CustomError('Invalid fields')
+    if (validateFields()) {
+      coilsService
+        .updateData(props.id, {
+          ...props,
+          material: fields.coilMaterial.value,
+          color: fields.coilColor.value,
+          length: fields.coilLength.value,
+        })
+        .then(() => {
+          getCoilsData()
+        })
+    } else {
+      throw new CustomError('Invalid fields')
+    }
   }
 }
 

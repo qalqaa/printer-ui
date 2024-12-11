@@ -6,73 +6,20 @@
       "brand": "Apple",
       "speed": 111,
       "coil": {
-        "printerProps": {
-          "id": "bfxyqee",
-          "name": "Iprinter",
-          "brand": "Apple",
-          "speed": 111,
-          "coil": {
-            "printerProps": {
-              "id": "bfxyqee",
-              "name": "Iprinter",
-              "brand": "Apple",
-              "speed": 100,
-              "coil": {
-                "printerProps": {
-                  "id": "bfxyqee",
-                  "name": "Iprinter",
-                  "brand": "Apple",
-                  "speed": 100,
-                  "coil": {
-                    "printerProps": {
-                      "id": "bfxyqee",
-                      "name": "Iprinter",
-                      "brand": "Apple",
-                      "speed": 100,
-                      "coil": {
-                        "id": "ehfxz2o",
-                        "material": "123",
-                        "color": "violet",
-                        "length": 212,
-                        "imgUrl": "coil.webp"
-                      },
-                      "queue": [],
-                      "imgUrl": "Iprinter.png"
-                    },
-                    "id": "ehfxz2o",
-                    "material": "123",
-                    "color": "violet",
-                    "length": 12,
-                    "isPrinting": false
-                  },
-                  "queue": [],
-                  "imgUrl": "Iprinter.png"
-                },
-                "id": "ehfxz2o",
-                "material": "123",
-                "color": "violet",
-                "length": 121,
-                "isPrinting": false
-              },
-              "queue": [],
-              "imgUrl": "Iprinter.png"
-            },
-            "id": "ehfxz2o",
-            "material": "123",
-            "color": "violet",
-            "length": 121,
-            "isPrinting": false
-          },
-          "queue": [],
-          "imgUrl": "Iprinter.png"
-        },
-        "id": "ehfxz2o",
+        "id": "k3wsi19",
         "material": "123",
-        "color": "violet",
-        "length": 110,
-        "isPrinting": false
+        "color": "orange",
+        "length": 123
       },
-      "queue": [],
+      "queue": [
+        {
+          "id": "ktbhgzn",
+          "isCompleted": false,
+          "name": "213",
+          "perimeter": 2,
+          "imgUrl": "figure.png"
+        }
+      ],
       "imgUrl": "Iprinter.png"
     },
     {
@@ -94,14 +41,6 @@
       "imgUrl": "LenovoPrinter.png"
     }
   ],
-  "coils": [
-    {
-      "id": "k3wsi19",
-      "material": "123",
-      "color": "orange",
-      "length": 123,
-      "imgUrl": "coil.webp"
-    }
-  ],
+  "coils": [],
   "figures": []
 }
