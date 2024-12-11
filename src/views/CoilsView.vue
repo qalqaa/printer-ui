@@ -2,6 +2,7 @@
 import CoilList from '@/components/Coil/list/CoilList.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import { coilsService } from '@/data/api/api'
+import { colorsLib } from '@/data/static'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
 import { generateIDs } from '@/util/generateIDs'
@@ -23,7 +24,7 @@ const isCreatingModeTrue = ref(false)
 const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue.value)
 
 const coilMaterial = ref('')
-const coilColor = ref('')
+const coilColor = ref(colorsLib[0].color)
 const coilLength = ref<number>()
 
 const errors = ref({
@@ -58,7 +59,7 @@ const createCoil = async () => {
         material: coilMaterial.value,
         color: coilColor.value,
         length: coilLength.value,
-        imgUrl: 'coil.png',
+        imgUrl: 'coil.webp',
       })
       .then(() => {
         getCoilsData()
@@ -108,16 +109,12 @@ watch(coilsData, () => {
             />
           </div>
           <div class="input-box">
-            <label for="color">Enter color</label>
-            <input
-              class="w-full"
-              required
-              placeholder=""
-              v-model="coilColor"
-              :class="{ 'user-invalid': errors.coilColor }"
-              id="color"
-              type="text"
-            />
+            <label for="color">Choose color</label>
+            <select class="w-full" v-model="coilColor" name="color" id="color">
+              <option v-for="color in colorsLib" :key="color.color" :value="color.color">
+                {{ color.color }}
+              </option>
+            </select>
           </div>
           <div class="input-box">
             <label for="length">Enter length</label>

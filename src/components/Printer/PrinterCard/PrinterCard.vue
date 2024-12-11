@@ -204,6 +204,7 @@ const print = (): void => {
 
       figuresService.postData({
         ...currentFigure,
+        color: props.coil.color,
         isCompleted: true,
       })
 

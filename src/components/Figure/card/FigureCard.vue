@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
+import { useColors } from '@/composables/useColors'
 import { figuresService, printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
-import type { IFigure, IPrinter } from '@/model/interfaces'
+import type { IColor, IFigure, IPrinter } from '@/model/interfaces'
 import { figuresKey, printersKey } from '@/util/injectionKeys'
 import { inject, ref, watch } from 'vue'
 
@@ -17,6 +18,11 @@ const props = defineProps<IFigure & { printerProps?: IPrinter } & { isPrinting?:
 
 const { getFiguresData } = figure
 const { getPrintersData } = printers
+
+const colors = ref<IColor | undefined>({ color: 'red', rotate: 0 })
+if (props.color) {
+  colors.value = useColors(props.color)
+}
 
 const figureName = ref(props.name)
 const figurePerimeter = ref(props.perimeter)
@@ -104,6 +110,7 @@ const deleteFigure = () => {
 <template>
   <li
     class="flex flex-row gap-4 justify-content-between bg-color-soft p-4 border-round-xl shadow-5 relative"
+    :style="{ border: '1px solid ' + color }"
   >
     <div class="flex flex-column gap-1">
       <h2>{{ name }}</h2>
@@ -143,7 +150,12 @@ const deleteFigure = () => {
       </div>
     </div>
 
-    <img width="100px" :src="imgUrl ? imgUrl : 'figure.png'" alt="figure-image" />
+    <img
+      width="150px"
+      :src="imgUrl ? imgUrl : 'figure.png'"
+      alt="figure-image"
+      :style="{ filter: 'hue-rotate(' + colors?.rotate + 'deg' }"
+    />
   </li>
   <DialogWindow :isOpen="isEditMode" @close="editModeHandle" @confirmAction="editFigure">
     <template #content>

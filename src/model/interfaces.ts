@@ -14,6 +14,7 @@ export interface IFigure {
   perimeter: Meter
   imgUrl?: string
   isCompleted: boolean
+  color?: string
 }
 
 export interface IPrinter {
@@ -24,4 +25,9 @@ export interface IPrinter {
   imgUrl?: string
   coil: ICoil | null
   queue: IFigure[] | null
+}
+
+export interface IColor {
+  color: string
+  rotate: number
 }

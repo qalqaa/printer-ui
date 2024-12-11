@@ -6,21 +6,13 @@
       "brand": "Apple",
       "speed": 100,
       "coil": {
-        "id": "ix8rinu",
-        "material": "Plastic",
-        "color": "red",
-        "length": 2000,
-        "imgUrl": "coil.png"
+        "id": "ehfxz2o",
+        "material": "123",
+        "color": "violet",
+        "length": 212,
+        "imgUrl": "coil.webp"
       },
-      "queue": [
-        {
-          "id": "cbjy4e7",
-          "isCompleted": false,
-          "name": "Test 1",
-          "perimeter": 100,
-          "imgUrl": "figure.png"
-        }
-      ],
+      "queue": [],
       "imgUrl": "Iprinter.png"
     },
     {
@@ -44,13 +36,29 @@
   ],
   "coils": [
     {
-      "id": "dcf2wjh",
+      "id": "k3wsi19",
       "material": "123",
-      "color": "123",
-      "length": 103,
-      "imgUrl": "coil.png",
-      "isPrinting": false
+      "color": "orange",
+      "length": 123,
+      "imgUrl": "coil.webp"
     }
   ],
-  "figures": []
+  "figures": [
+    {
+      "id": "83q4bjv",
+      "isCompleted": true,
+      "name": "213",
+      "perimeter": 1,
+      "imgUrl": "figure.png",
+      "color": "blue"
+    },
+    {
+      "id": "h2rpdti",
+      "isCompleted": true,
+      "name": "Pidor",
+      "perimeter": 1,
+      "imgUrl": "figure.png",
+      "color": "violet"
+    }
+  ]
 }

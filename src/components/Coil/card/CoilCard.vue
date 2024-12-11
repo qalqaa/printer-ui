@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
+import { useColors } from '@/composables/useColors'
 import { coilsService, printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
@@ -8,6 +9,8 @@ import { coilsKey, printersKey } from '@/util/injectionKeys'
 import { inject, ref, watch } from 'vue'
 
 const props = defineProps<ICoil & { printerProps?: IPrinter } & { isPrinting?: boolean }>()
+
+const colors = useColors(props.color)
 
 const coilMaterial = ref(props.material)
 const coilColor = ref(props.color)
@@ -149,6 +152,7 @@ const cut = () => {
 <template>
   <li
     class="flex flex-row gap-4 justify-content-between bg-color-soft p-4 border-round-xl shadow-5 relative"
+    :style="{ border: '1px solid ' + color }"
   >
     <div class="flex flex-column gap-1">
       <p>Material: {{ material }}</p>
@@ -202,7 +206,12 @@ const cut = () => {
         </button>
       </div>
     </div>
-    <img width="100px" :src="imgUrl ? imgUrl : 'coil.png'" alt="coil-image" />
+    <img
+      width="150px"
+      :src="imgUrl ? imgUrl : 'coil.webp'"
+      alt="coil-image"
+      :style="{ filter: 'hue-rotate(' + colors?.rotate + 'deg)' }"
+    />
   </li>
   <DialogWindow :isOpen="isCuttingMode" @close="cuttingModeHandle" @confirm-action="cut()">
     <template #content>

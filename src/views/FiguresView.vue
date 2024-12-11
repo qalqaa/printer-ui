@@ -44,7 +44,6 @@ watch(figurePerimeter, (newValue) => {
 })
 
 const createFigure = async () => {
-  console.log(figurePerimeter.value)
   if (validateFields() && figurePerimeter.value !== undefined) {
     if (figurePerimeter.value < 0) {
       throw new CustomError("Perimeter can't be negative or null")
@@ -85,7 +84,11 @@ watch(figuresData, () => {
 <template>
   <DefaultView title="Figures" :loading="loading" :create-handle="creatingModeHandle">
     <template #list>
-      <FigureList v-if="incompleteFigures.length !== 0" :items="incompleteFigures" />
+      <FigureList
+        id="FigureList"
+        v-if="incompleteFigures.length !== 0"
+        :items="incompleteFigures"
+      />
       <p v-else>No figures found 😫</p>
     </template>
     <template #dialog>
