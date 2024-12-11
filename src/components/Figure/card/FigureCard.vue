@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import { useColors } from '@/composables/useColors'
+import { useFieldValidation } from '@/composables/useFieldValidation'
 import { figuresService, printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
 import type { IColor, IFigure, IPrinter } from '@/model/interfaces'
 import { figuresKey, printersKey } from '@/util/injectionKeys'
-import { inject, ref, watch } from 'vue'
+import { inject, ref } from 'vue'
 
 const figure = inject(figuresKey)
 const printers = inject(printersKey)
@@ -24,31 +25,24 @@ if (props.color) {
   colors.value = useColors(props.color)
 }
 
-const figureName = ref(props.name)
-const figurePerimeter = ref(props.perimeter)
-
 const isEditMode = ref(false)
 const editModeHandle = () => (isEditMode.value = !isEditMode.value)
-
-const errors = ref({
-  figureName: false,
-  figurePerimeter: false,
-})
-
-const validateFields = () => {
-  errors.value.figureName = figureName.value === ''
-  errors.value.figurePerimeter = figurePerimeter.value === undefined || figurePerimeter.value <= 0
-  return !errors.value.figureName && !errors.value.figurePerimeter
-}
-
-watch(figureName, (newValue) => {
-  if (newValue !== '') errors.value.figureName = false
-})
-watch(figurePerimeter, (newValue) => {
-  if (newValue !== undefined && newValue > 0) errors.value.figurePerimeter = false
-})
+const { fields, errors, validateFields } = useFieldValidation(
+  {
+    figureName: props.name,
+    figurePerimeter: props.perimeter,
+  },
+  {
+    figureName: (value) => value !== '',
+    figurePerimeter: (value) => value !== undefined && value > 0,
+  },
+)
 
 const editFigure = () => {
+  if (fields.figurePerimeter.value <= 0) {
+    errors.figurePerimeter.value = true
+    throw new CustomError("Perimeter can't be negative or null")
+  }
   if (props.printerProps) {
     if (props.printerProps.queue) {
       printersService
@@ -57,7 +51,11 @@ const editFigure = () => {
           queue: [
             ...props.printerProps.queue.map((item) => {
               if (item.id === props.id) {
-                return { ...item, name: figureName.value, perimeter: figurePerimeter.value }
+                return {
+                  ...item,
+                  name: fields.figureName.value,
+                  perimeter: fields.figurePerimeter.value,
+                }
               }
               return item
             }),
@@ -74,8 +72,8 @@ const editFigure = () => {
     figuresService
       .updateData(props.id, {
         ...props,
-        name: figureName.value,
-        perimeter: figurePerimeter.value,
+        name: fields.figureName.value,
+        perimeter: fields.figurePerimeter.value,
       })
       .then(() => {
         getFiguresData()
@@ -110,8 +108,8 @@ const deleteFigure = () => {
 <template>
   <li
     class="flex flex-row gap-4 justify-content-between bg-color-soft p-4 border-round-xl shadow-5 relative"
-    :style="{ border: '1px solid ' + color }"
   >
+    <!-- :style="{ border: '1px solid ' + color }" -->
     <div class="flex flex-column gap-1">
       <h2>{{ name }}</h2>
       <p>Perimeter: {{ perimeter }}m</p>
@@ -166,8 +164,8 @@ const deleteFigure = () => {
           class="w-full"
           required
           placeholder=""
-          v-model="figureName"
-          :class="{ 'user-invalid': errors.figureName }"
+          v-model="fields.figureName.value"
+          :class="{ 'user-invalid': errors.figureName.value }"
           id="printerName"
           type="text"
         />
@@ -179,8 +177,8 @@ const deleteFigure = () => {
           required
           placeholder=""
           min="0"
-          v-model="figurePerimeter"
-          :class="{ 'user-invalid': errors.figurePerimeter }"
+          v-model="fields.figurePerimeter.value"
+          :class="{ 'user-invalid': errors.figurePerimeter.value }"
           id="printerBrand"
           type="number"
         />

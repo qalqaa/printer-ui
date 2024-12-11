@@ -2,13 +2,14 @@
 import CoilCard from '@/components/Coil/card/CoilCard.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import FigureCard from '@/components/Figure/card/FigureCard.vue'
+import { useFieldValidation } from '@/composables/useFieldValidation'
 import { coilsService, figuresService, printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
 import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
 import { coilsKey, figuresKey, printersKey } from '@/util/injectionKeys'
 import { simulateErrors } from '@/util/simulateErrors'
-import { computed, inject, ref, watch } from 'vue'
+import { computed, inject, ref } from 'vue'
 import ProgressBar from '../ProgressBar/ProgressBar.vue'
 
 const props = defineProps<IPrinter>()
@@ -36,33 +37,18 @@ const isEditingMode = ref(false)
 const selectedCoil = ref<ICoil | 'placeholder'>('placeholder')
 const selectedFigure = ref<IFigure | 'placeholder'>('placeholder')
 
-const printerName = ref(props.name)
-const printerBrand = ref(props.brand)
-const printerSpeed = ref(props.speed)
-
-const errors = ref({
-  printerName: false,
-  printerBrand: false,
-  printerSpeed: false,
-})
-
-const validateFields = () => {
-  errors.value.printerName = printerName.value === ''
-  errors.value.printerBrand = printerBrand.value === ''
-  errors.value.printerSpeed = printerSpeed.value <= 0 || printerSpeed.value === undefined
-
-  return !errors.value.printerName && !errors.value.printerBrand && !errors.value.printerSpeed
-}
-
-watch(printerName, (newValue) => {
-  if (newValue !== '') errors.value.printerName = false
-})
-watch(printerBrand, (newValue) => {
-  if (newValue !== '') errors.value.printerBrand = false
-})
-watch(printerSpeed, (newValue) => {
-  if (newValue > 0 && newValue !== undefined) errors.value.printerSpeed = false
-})
+const { fields, errors, validateFields } = useFieldValidation(
+  {
+    printerName: props.name,
+    printerBrand: props.brand,
+    printerSpeed: props.speed,
+  },
+  {
+    printerName: (value) => value !== '',
+    printerBrand: (value) => value !== '',
+    printerSpeed: (value) => value !== undefined && value > 0,
+  },
+)
 
 const queueHandle = () => {
   if (incompleteFigures.value.length === 0) {
@@ -83,20 +69,23 @@ const editHandle = () => {
 }
 
 const editPrinter = () => {
+  if (fields.printerSpeed.value <= 0) {
+    errors.printerSpeed.value = true
+    throw new CustomError("Speed can't be negative or null")
+  }
   if (validateFields()) {
     printersService
       .updateData(props.id, {
         ...props,
-        name: printerName.value,
-        brand: printerBrand.value,
-        speed: printerSpeed.value,
+        name: fields.printerName.value,
+        brand: fields.printerBrand.value,
+        speed: fields.printerSpeed.value,
       })
       .then(() => {
         getPrintersData()
       })
     toastInstance.addToast('Printer edited!', 'success')
   } else {
-    isEditingMode.value = false
     throw new CustomError('Invalid fields')
   }
 }
@@ -352,14 +341,14 @@ const deletePrinter = () => {
     <template #content>
       <h2>Edit a {{ name }}</h2>
       <div class="input-box">
-        <label for="printerName">Enter name</label>
+        <label for="fields.">Enter name</label>
         <input
           class="w-full"
           required
           placeholder=""
           maxlength="10"
-          v-model="printerName"
-          :class="{ 'user-invalid': errors.printerName }"
+          v-model="fields.printerName.value"
+          :class="{ 'user-invalid': errors.printerName.value }"
           id="printerName"
           type="text"
         />
@@ -370,8 +359,8 @@ const deletePrinter = () => {
           class="w-full"
           required
           placeholder=""
-          v-model="printerBrand"
-          :class="{ 'user-invalid': errors.printerBrand }"
+          v-model="fields.printerBrand.value"
+          :class="{ 'user-invalid': errors.printerBrand.value }"
           id="printerBrand"
           type="text"
         />
@@ -382,8 +371,8 @@ const deletePrinter = () => {
           class="w-full"
           required
           placeholder=""
-          v-model="printerSpeed"
-          :class="{ 'user-invalid': errors.printerSpeed }"
+          v-model="fields.printerSpeed.value"
+          :class="{ 'user-invalid': errors.printerSpeed.value }"
           id="printerSpeed"
           type="number"
         />

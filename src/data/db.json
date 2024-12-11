@@ -4,13 +4,73 @@
       "id": "bfxyqee",
       "name": "Iprinter",
       "brand": "Apple",
-      "speed": 100,
+      "speed": 111,
       "coil": {
+        "printerProps": {
+          "id": "bfxyqee",
+          "name": "Iprinter",
+          "brand": "Apple",
+          "speed": 111,
+          "coil": {
+            "printerProps": {
+              "id": "bfxyqee",
+              "name": "Iprinter",
+              "brand": "Apple",
+              "speed": 100,
+              "coil": {
+                "printerProps": {
+                  "id": "bfxyqee",
+                  "name": "Iprinter",
+                  "brand": "Apple",
+                  "speed": 100,
+                  "coil": {
+                    "printerProps": {
+                      "id": "bfxyqee",
+                      "name": "Iprinter",
+                      "brand": "Apple",
+                      "speed": 100,
+                      "coil": {
+                        "id": "ehfxz2o",
+                        "material": "123",
+                        "color": "violet",
+                        "length": 212,
+                        "imgUrl": "coil.webp"
+                      },
+                      "queue": [],
+                      "imgUrl": "Iprinter.png"
+                    },
+                    "id": "ehfxz2o",
+                    "material": "123",
+                    "color": "violet",
+                    "length": 12,
+                    "isPrinting": false
+                  },
+                  "queue": [],
+                  "imgUrl": "Iprinter.png"
+                },
+                "id": "ehfxz2o",
+                "material": "123",
+                "color": "violet",
+                "length": 121,
+                "isPrinting": false
+              },
+              "queue": [],
+              "imgUrl": "Iprinter.png"
+            },
+            "id": "ehfxz2o",
+            "material": "123",
+            "color": "violet",
+            "length": 121,
+            "isPrinting": false
+          },
+          "queue": [],
+          "imgUrl": "Iprinter.png"
+        },
         "id": "ehfxz2o",
         "material": "123",
         "color": "violet",
-        "length": 212,
-        "imgUrl": "coil.webp"
+        "length": 111,
+        "isPrinting": false
       },
       "queue": [],
       "imgUrl": "Iprinter.png"
@@ -59,6 +119,14 @@
       "perimeter": 1,
       "imgUrl": "figure.png",
       "color": "violet"
+    },
+    {
+      "id": "slgdwld",
+      "name": "123",
+      "perimeter": 1,
+      "imgUrl": "figure.png",
+      "isCompleted": false,
+      "isPrinting": false
     }
   ]
 }

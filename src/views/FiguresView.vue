@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import FigureList from '@/components/Figure/list/FigureList.vue'
+import { useFieldValidation } from '@/composables/useFieldValidation'
+import { useIds } from '@/composables/useIds'
 import { figuresService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
-import { generateIDs } from '@/util/generateIDs'
 import { figuresKey } from '@/util/injectionKeys'
 import { computed, inject, onMounted, ref, watch } from 'vue'
 import DefaultView from './DefaultView.vue'
@@ -22,44 +23,36 @@ const isCreatingModeTrue = ref(false)
 
 const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue.value)
 
-const figureName = ref('')
-const figurePerimeter = ref<number>()
-
-const errors = ref({
-  figureName: false,
-  figurePerimeter: false,
-})
-
-const validateFields = () => {
-  errors.value.figureName = figureName.value === ''
-  errors.value.figurePerimeter = figurePerimeter.value === undefined || figurePerimeter.value <= 0
-  return !errors.value.figureName && !errors.value.figurePerimeter
-}
-
-watch(figureName, (newValue) => {
-  if (newValue !== '') errors.value.figureName = false
-})
-watch(figurePerimeter, (newValue) => {
-  if (newValue !== undefined && newValue > 0) errors.value.figurePerimeter = false
-})
+const { fields, errors, validateFields } = useFieldValidation(
+  {
+    figureName: '',
+    figurePerimeter: 0,
+  },
+  {
+    figureName: (value) => value !== '',
+    figurePerimeter: (value) => value !== undefined && value > 0,
+  },
+)
 
 const createFigure = async () => {
-  if (validateFields() && figurePerimeter.value !== undefined) {
-    if (figurePerimeter.value < 0) {
-      throw new CustomError("Perimeter can't be negative or null")
-    }
+  if (fields.figurePerimeter.value <= 0) {
+    isCreatingModeTrue.value = false
+    errors.figurePerimeter.value = true
+    throw new CustomError("Perimeter can't be negative or null")
+  }
+  if (validateFields()) {
     figuresService
       .postData({
-        id: generateIDs(),
+        id: useIds(),
         isCompleted: false,
-        name: figureName.value,
-        perimeter: figurePerimeter.value,
+        name: fields.figureName.value,
+        perimeter: fields.figurePerimeter.value,
         imgUrl: 'figure.png',
       })
       .then(() => {
         getFiguresData()
       })
-    toastInstance.addToast(figureName.value + ' created!', 'success')
+    toastInstance.addToast(fields.figureName.value + ' created!', 'success')
   } else {
     isCreatingModeTrue.value = false
     throw new CustomError('Fill all required fields')
@@ -105,8 +98,8 @@ watch(figuresData, () => {
               class="w-full"
               required
               placeholder=""
-              v-model="figureName"
-              :class="{ 'user-invalid': errors.figureName }"
+              v-model="fields.figureName.value"
+              :class="{ 'user-invalid': errors.figureName.value }"
               id="printerName"
               type="text"
             />
@@ -118,8 +111,8 @@ watch(figuresData, () => {
               required
               placeholder=""
               min="0"
-              v-model="figurePerimeter"
-              :class="{ 'user-invalid': errors.figurePerimeter }"
+              v-model="fields.figurePerimeter.value"
+              :class="{ 'user-invalid': errors.figurePerimeter.value }"
               id="printerBrand"
               type="number"
             />

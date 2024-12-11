@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import PrinterList from '@/components/Printer/PrinterList/PrinterList.vue'
+import { useFieldValidation } from '@/composables/useFieldValidation'
+import { useIds } from '@/composables/useIds'
 import { printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
-import type { MillimeterPerSecond } from '@/model/types'
-import { generateIDs } from '@/util/generateIDs'
 import { printersKey } from '@/util/injectionKeys'
 import { inject, ref, watch } from 'vue'
 import DefaultView from './DefaultView.vue'
@@ -13,7 +13,7 @@ import DefaultView from './DefaultView.vue'
 const printers = inject(printersKey)
 
 if (!printers) {
-  throw new Error('Printers service is not provided')
+  throw new CustomError('Printers service is not provided')
 }
 
 const { printersData, getPrintersData } = printers
@@ -23,42 +23,32 @@ const isCreatingModeTrue = ref(false)
 
 const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue.value)
 
-const printerName = ref('')
-const printerBrand = ref('')
-const printerSpeed = ref<MillimeterPerSecond>()
-
-const errors = ref({
-  printerName: false,
-  printerBrand: false,
-  printerSpeed: false,
-})
-
-const validateFields = () => {
-  errors.value.printerName = printerName.value === ''
-  errors.value.printerBrand = printerBrand.value === ''
-  errors.value.printerSpeed = printerSpeed.value === undefined || printerSpeed.value <= 0
-
-  return !errors.value.printerName && !errors.value.printerBrand && !errors.value.printerSpeed
-}
-
-watch(printerName, (newValue) => {
-  if (newValue !== '') errors.value.printerName = false
-})
-watch(printerBrand, (newValue) => {
-  if (newValue !== '') errors.value.printerBrand = false
-})
-watch(printerSpeed, (newValue) => {
-  if (newValue !== undefined && newValue > 0) errors.value.printerSpeed = false
-})
+const { fields, errors, validateFields } = useFieldValidation(
+  {
+    printerName: '',
+    printerBrand: '',
+    printerSpeed: 0,
+  },
+  {
+    printerName: (value) => value !== '',
+    printerBrand: (value) => value !== '',
+    printerSpeed: (value) => value !== undefined && value > 0,
+  },
+)
 
 const createPrinter = async () => {
-  if (validateFields() && printerSpeed.value !== undefined) {
+  if (fields.printerSpeed.value <= 0) {
+    isCreatingModeTrue.value = false
+    errors.printerSpeed.value = true
+    throw new CustomError("Speed can't be negative or null")
+  }
+  if (validateFields()) {
     printersService
       .postData({
-        id: generateIDs(),
-        name: printerName.value,
-        speed: printerSpeed.value,
-        brand: printerBrand.value,
+        id: useIds(),
+        name: fields.printerName.value,
+        speed: fields.printerSpeed.value,
+        brand: fields.printerBrand.value,
         imgUrl: '3d-printer.png',
         coil: null,
         queue: [],
@@ -66,7 +56,7 @@ const createPrinter = async () => {
       .then(() => {
         getPrintersData()
       })
-    toastInstance.addToast(printerName.value + ' created', 'success')
+    toastInstance.addToast(fields.printerName.value + ' created', 'success')
   } else {
     isCreatingModeTrue.value = false
     throw new CustomError('Fill all required fields')
@@ -101,8 +91,8 @@ watch(printersData, () => {
               class="w-full"
               required
               placeholder=""
-              v-model="printerName"
-              :class="{ 'user-invalid': errors.printerName }"
+              v-model="fields.printerName.value"
+              :class="{ 'user-invalid': errors.printerName.value }"
               id="printerName"
               type="text"
             />
@@ -113,8 +103,8 @@ watch(printersData, () => {
               class="w-full"
               required
               placeholder=""
-              v-model="printerBrand"
-              :class="{ 'user-invalid': errors.printerBrand }"
+              v-model="fields.printerBrand.value"
+              :class="{ 'user-invalid': errors.printerBrand.value }"
               id="printerBrand"
               type="text"
             />
@@ -125,8 +115,8 @@ watch(printersData, () => {
               class="w-full"
               required
               placeholder=""
-              v-model="printerSpeed"
-              :class="{ 'user-invalid': errors.printerSpeed }"
+              v-model="fields.printerSpeed.value"
+              :class="{ 'user-invalid': errors.printerSpeed.value }"
               id="printerSpeed"
               type="number"
             />

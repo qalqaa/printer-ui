@@ -1,20 +1,18 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import { useColors } from '@/composables/useColors'
+import { useFieldValidation } from '@/composables/useFieldValidation'
 import { coilsService, printersService } from '@/data/api/api'
+import { colorsLib } from '@/data/static'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
 import type { ICoil, IPrinter } from '@/model/interfaces'
 import { coilsKey, printersKey } from '@/util/injectionKeys'
-import { inject, ref, watch } from 'vue'
+import { inject, ref } from 'vue'
 
 const props = defineProps<ICoil & { printerProps?: IPrinter } & { isPrinting?: boolean }>()
 
 const colors = useColors(props.color)
-
-const coilMaterial = ref(props.material)
-const coilColor = ref(props.color)
-const coilLength = ref(props.length)
 
 const printers = inject(printersKey)
 const coils = inject(coilsKey)
@@ -30,33 +28,27 @@ const isCuttingMode = ref(false)
 const cutLength = ref(0)
 const isEditingMode = ref(false)
 
-const errors = ref({
-  coilMaterial: false,
-  coilColor: false,
-  coilLength: false,
-})
-
-const validateFields = () => {
-  errors.value.coilMaterial = coilMaterial.value === ''
-  errors.value.coilColor = coilColor.value === ''
-  errors.value.coilLength = coilLength.value === undefined || coilLength.value <= 0
-
-  return !errors.value.coilMaterial && !errors.value.coilColor && !errors.value.coilLength
-}
-
-watch(coilMaterial, (newValue) => {
-  if (newValue !== '') errors.value.coilMaterial = false
-})
-watch(coilColor, (newValue) => {
-  if (newValue !== '') errors.value.coilColor = false
-})
-watch(coilLength, (newValue) => {
-  if (newValue !== undefined && newValue > 0) errors.value.coilLength = false
-})
+const { fields, errors, validateFields } = useFieldValidation(
+  {
+    coilMaterial: props.material,
+    coilColor: props.color,
+    coilLength: props.length,
+  },
+  {
+    coilMaterial: (value) => value !== '',
+    coilColor: (value) => value !== '',
+    coilLength: (value) => value !== undefined && value > 0,
+  },
+)
 
 const editModeHandle = () => (isEditingMode.value = !isEditingMode.value)
 
 const editCoil = () => {
+  if (fields.coilLength.value <= 0) {
+    errors.coilLength.value = true
+    throw new CustomError("Length can't be negative or null")
+  }
+  toastInstance.addToast('Coil edited!', 'success')
   if (props.printerProps) {
     if (validateFields()) {
       printersService
@@ -64,9 +56,9 @@ const editCoil = () => {
           ...props.printerProps,
           coil: {
             ...props,
-            material: coilMaterial.value,
-            color: coilColor.value,
-            length: coilLength.value,
+            material: fields.coilMaterial.value,
+            color: fields.coilColor.value,
+            length: fields.coilLength.value,
           },
         })
         .then(() => {
@@ -74,7 +66,6 @@ const editCoil = () => {
         })
       return
     } else {
-      isEditingMode.value = false
       throw new CustomError('Invalid fields')
     }
   }
@@ -82,14 +73,13 @@ const editCoil = () => {
     coilsService
       .updateData(props.id, {
         ...props,
-        material: coilMaterial.value,
-        color: coilColor.value,
-        length: coilLength.value,
+        material: fields.coilMaterial.value,
+        color: fields.coilColor.value,
+        length: fields.coilLength.value,
       })
       .then(() => {
         getCoilsData()
       })
-    toastInstance.addToast('Coil edited!', 'success')
   } else {
     throw new CustomError('Invalid fields')
   }
@@ -119,8 +109,8 @@ const cut = () => {
   if (cutLength.value <= 0) {
     throw new CustomError('Cut length must be bigger than 0')
   }
-  if (cutLength.value >= coilLength.value) {
-    coilLength.value = 0
+  if (cutLength.value >= fields.coilLength.value) {
+    fields.coilLength.value = 0
     coilsService.deleteData(props.id)
     throw new CustomError('Cut length is bigger than coil length')
   }
@@ -131,18 +121,18 @@ const cut = () => {
     })
     toastInstance.addToast(`Coil is cutted`, 'success')
   }
-  coilLength.value -= cutLength.value
+  fields.coilLength.value -= cutLength.value
   if (props.printerProps) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { printerProps, length, ...filteredProps } = props
     printersService.updateData(props.printerProps.id, {
       ...props.printerProps,
-      coil: { ...filteredProps, length: coilLength.value },
+      coil: { ...filteredProps, length: fields.coilLength.value },
     })
     toastInstance.addToast(`Coil is cutted`, 'success')
     return
   }
-  coilsService.updateData(props.id, { ...props, length: coilLength.value }).then(() => {
+  coilsService.updateData(props.id, { ...props, length: fields.coilLength.value }).then(() => {
     getCoilsData()
   })
   toastInstance.addToast(`Coil is cutted`, 'success')
@@ -152,8 +142,8 @@ const cut = () => {
 <template>
   <li
     class="flex flex-row gap-4 justify-content-between bg-color-soft p-4 border-round-xl shadow-5 relative"
-    :style="{ border: '1px solid ' + color }"
   >
+    <!-- :style="{ border: '1px solid ' + color }" -->
     <div class="flex flex-column gap-1">
       <p>Material: {{ material }}</p>
       <p>Color: {{ color }}</p>
@@ -215,7 +205,7 @@ const cut = () => {
   </li>
   <DialogWindow :isOpen="isCuttingMode" @close="cuttingModeHandle" @confirm-action="cut()">
     <template #content>
-      <p>Length: {{ coilLength }} m</p>
+      <p>Length: {{ fields.coilLength.value }} m</p>
       <div class="input-box">
         <label for="cutLength">Choose cut length</label>
         <input
@@ -224,7 +214,7 @@ const cut = () => {
           placeholder=""
           v-model="cutLength"
           min="0"
-          :max="coilLength"
+          :max="fields.coilLength.value"
           type="number"
         />
       </div>
@@ -240,23 +230,19 @@ const cut = () => {
           required
           placeholder=""
           maxlength="10"
-          v-model="coilMaterial"
-          :class="{ 'user-invalid': errors.coilMaterial }"
+          v-model="fields.coilMaterial.value"
+          :class="{ 'user-invalid': errors.coilMaterial.value }"
           id="material"
           type="text"
         />
       </div>
-      <div class="input-box">
-        <label for="color">Enter color</label>
-        <input
-          class="w-full"
-          required
-          placeholder=""
-          v-model="coilColor"
-          :class="{ 'user-invalid': errors.coilColor }"
-          id="color"
-          type="text"
-        />
+      <div>
+        <label for="color">Choose color</label>
+        <select class="w-full" v-model="fields.coilColor.value" name="color" id="color">
+          <option v-for="color in colorsLib" :key="color.color" :value="color.color">
+            {{ color.color }}
+          </option>
+        </select>
       </div>
       <div class="input-box">
         <label for="length">Enter length</label>
@@ -264,8 +250,8 @@ const cut = () => {
           class="w-full"
           required
           placeholder=""
-          v-model="coilLength"
-          :class="{ 'user-invalid': errors.coilLength }"
+          v-model="fields.coilLength.value"
+          :class="{ 'user-invalid': errors.coilLength.value }"
           id="length"
           type="number"
         />

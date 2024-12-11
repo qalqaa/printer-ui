@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import CoilList from '@/components/Coil/list/CoilList.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
+import { useFieldValidation } from '@/composables/useFieldValidation'
+import { useIds } from '@/composables/useIds'
 import { coilsService } from '@/data/api/api'
 import { colorsLib } from '@/data/static'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
-import { generateIDs } from '@/util/generateIDs'
 import { coilsKey } from '@/util/injectionKeys'
 import { inject, onMounted, ref, watch } from 'vue'
 import DefaultView from './DefaultView.vue'
@@ -13,7 +14,7 @@ import DefaultView from './DefaultView.vue'
 const coils = inject(coilsKey)
 
 if (!coils) {
-  throw new Error('Coils service is not provided')
+  throw new CustomError('Coils service is not provided')
 }
 
 const { coilsData, getCoilsData } = coils
@@ -23,42 +24,32 @@ const isCreatingModeTrue = ref(false)
 
 const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue.value)
 
-const coilMaterial = ref('')
-const coilColor = ref(colorsLib[0].color)
-const coilLength = ref<number>()
-
-const errors = ref({
-  coilMaterial: false,
-  coilColor: false,
-  coilLength: false,
-})
-
-const validateFields = () => {
-  errors.value.coilMaterial = coilMaterial.value === ''
-  errors.value.coilColor = coilColor.value === ''
-  errors.value.coilLength = coilLength.value === undefined || coilLength.value <= 0
-
-  return !errors.value.coilMaterial && !errors.value.coilColor && !errors.value.coilLength
-}
-
-watch(coilMaterial, (newValue) => {
-  if (newValue !== '') errors.value.coilMaterial = false
-})
-watch(coilColor, (newValue) => {
-  if (newValue !== '') errors.value.coilColor = false
-})
-watch(coilLength, (newValue) => {
-  if (newValue !== undefined && newValue > 0) errors.value.coilLength = false
-})
+const { fields, errors, validateFields } = useFieldValidation(
+  {
+    coilMaterial: '',
+    coilColor: 'red',
+    coilLength: 0,
+  },
+  {
+    coilMaterial: (value) => value !== '',
+    coilColor: (value) => value !== '',
+    coilLength: (value) => value !== undefined && value > 0,
+  },
+)
 
 const createCoil = async () => {
-  if (validateFields() && coilLength.value !== undefined) {
+  if (fields.coilLength.value <= 0) {
+    isCreatingModeTrue.value = false
+    errors.coilLength.value = true
+    throw new CustomError("Length can't be negative or null")
+  }
+  if (validateFields()) {
     coilsService
       .postData({
-        id: generateIDs(),
-        material: coilMaterial.value,
-        color: coilColor.value,
-        length: coilLength.value,
+        id: useIds(),
+        material: fields.coilMaterial.value,
+        color: fields.coilColor.value,
+        length: fields.coilLength.value,
         imgUrl: 'coil.webp',
       })
       .then(() => {
@@ -102,15 +93,15 @@ watch(coilsData, () => {
               class="w-full"
               required
               placeholder=""
-              v-model="coilMaterial"
-              :class="{ 'user-invalid': errors.coilMaterial }"
+              v-model="fields.coilMaterial.value"
+              :class="{ 'user-invalid': errors.coilMaterial.value }"
               id="material"
               type="text"
             />
           </div>
-          <div class="input-box">
+          <div>
             <label for="color">Choose color</label>
-            <select class="w-full" v-model="coilColor" name="color" id="color">
+            <select class="w-full" v-model="fields.coilColor.value" name="color" id="color">
               <option v-for="color in colorsLib" :key="color.color" :value="color.color">
                 {{ color.color }}
               </option>
@@ -122,8 +113,8 @@ watch(coilsData, () => {
               class="w-full"
               required
               placeholder=""
-              v-model="coilLength"
-              :class="{ 'user-invalid': errors.coilLength }"
+              v-model="fields.coilLength.value"
+              :class="{ 'user-invalid': errors.coilLength.value }"
               id="length"
               type="number"
             />
