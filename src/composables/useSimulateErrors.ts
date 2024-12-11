@@ -1,6 +1,6 @@
 import { SimulateError } from '@/model/error/customError'
 
-export const simulateErrors = (progress: number) => {
+export const useSimulateErrors = (progress: number) => {
   const randomValue = Math.random() * 1000
 
   if (randomValue < 1) {

@@ -69,7 +69,7 @@
         "id": "ehfxz2o",
         "material": "123",
         "color": "violet",
-        "length": 111,
+        "length": 110,
         "isPrinting": false
       },
       "queue": [],
@@ -103,30 +103,5 @@
       "imgUrl": "coil.webp"
     }
   ],
-  "figures": [
-    {
-      "id": "83q4bjv",
-      "isCompleted": true,
-      "name": "213",
-      "perimeter": 1,
-      "imgUrl": "figure.png",
-      "color": "blue"
-    },
-    {
-      "id": "h2rpdti",
-      "isCompleted": true,
-      "name": "Pidor",
-      "perimeter": 1,
-      "imgUrl": "figure.png",
-      "color": "violet"
-    },
-    {
-      "id": "slgdwld",
-      "name": "123",
-      "perimeter": 1,
-      "imgUrl": "figure.png",
-      "isCompleted": false,
-      "isPrinting": false
-    }
-  ]
+  "figures": []
 }

@@ -3,12 +3,12 @@ import CoilCard from '@/components/Coil/card/CoilCard.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import FigureCard from '@/components/Figure/card/FigureCard.vue'
 import { useFieldValidation } from '@/composables/useFieldValidation'
+import { useSimulateErrors } from '@/composables/useSimulateErrors'
 import { coilsService, figuresService, printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
 import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
 import { coilsKey, figuresKey, printersKey } from '@/util/injectionKeys'
-import { simulateErrors } from '@/util/simulateErrors'
 import { computed, inject, ref } from 'vue'
 import ProgressBar from '../ProgressBar/ProgressBar.vue'
 
@@ -151,7 +151,7 @@ const print = (): void => {
   }
 
   const timer = setInterval(() => {
-    const error = simulateErrors(progress.value)
+    const error = useSimulateErrors(progress.value)
 
     if (error) {
       clearInterval(timer)

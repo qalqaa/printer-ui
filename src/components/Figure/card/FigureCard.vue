@@ -27,6 +27,7 @@ if (props.color) {
 
 const isEditMode = ref(false)
 const editModeHandle = () => (isEditMode.value = !isEditMode.value)
+
 const { fields, errors, validateFields } = useFieldValidation(
   {
     figureName: props.name,
@@ -41,6 +42,7 @@ const { fields, errors, validateFields } = useFieldValidation(
 const editFigure = () => {
   if (fields.figurePerimeter.value <= 0) {
     errors.figurePerimeter.value = true
+
     throw new CustomError("Perimeter can't be negative or null")
   }
   if (props.printerProps) {
