@@ -5,7 +5,12 @@
       "name": "Iprinter",
       "brand": "Apple",
       "speed": 100,
-      "coil": null,
+      "coil": {
+        "id": "xtprzup",
+        "material": "PLA",
+        "color": "red",
+        "length": 997
+      },
       "queue": [],
       "imgUrl": "Iprinter.png"
     },
@@ -30,12 +35,6 @@
   ],
   "coils": [
     {
-      "id": "xtprzup",
-      "material": "PLA",
-      "color": "red",
-      "length": 998
-    },
-    {
       "id": "rlmgafm",
       "material": "PBT",
       "color": "green",
@@ -49,20 +48,5 @@
       "isPrinting": false
     }
   ],
-  "figures": [
-    {
-      "id": "lqy29gt",
-      "isCompleted": false,
-      "name": "eee",
-      "perimeter": 1,
-      "imgUrl": "figure.png"
-    },
-    {
-      "id": "l2glxe6",
-      "isCompleted": false,
-      "name": "ggg",
-      "perimeter": 1,
-      "imgUrl": "figure.png"
-    }
-  ]
+  "figures": []
 }

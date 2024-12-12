@@ -34,7 +34,6 @@ const coilsStore = useCoilsStore()
 const figuresStore = useFiguresStore()
 
 const coilsData = coilsStore.getCoils
-const figuresData = ref(figuresStore.getBlueprints)
 
 // const incompleteFigures = computed(() => {
 //   return figuresData.value.filter((figure) => !figure.isCompleted)
@@ -60,8 +59,8 @@ const { fields, errors, validateFields } = useFieldValidation(
 )
 
 const queueHandle = () => {
-  figuresData.value = figuresStore.getBlueprints
-  if (figuresData.value.length === 0) {
+  // figuresData.value = figuresStore.getBlueprints
+  if (figuresStore.getBlueprints.length === 0 && !isQueueMode.value) {
     throw new CustomError('No figures, create at least one in figures tab')
   }
   isQueueMode.value = !isQueueMode.value
@@ -330,7 +329,7 @@ const deletePrinter = () => {
       <select v-model="selectedFigure" name="coil">
         <option selected disabled hidden value="placeholder">Chose a figure</option>
         <option
-          v-for="item in figuresData"
+          v-for="item in figuresStore.getBlueprints"
           :key="item.id"
           :value="item"
           :label="item.name + ', ' + item.perimeter + 'm'"
