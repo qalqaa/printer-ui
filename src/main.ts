@@ -1,3 +1,4 @@
+import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import App from './App.vue'
 import './assets/style/main.scss'
@@ -7,6 +8,8 @@ import router from './router'
 
 const app = createApp(App)
 app.use(router)
+app.use(createPinia())
+app.mount('#app')
 
 const toastApp = createApp(ToastNotification)
 export const toastInstance = toastApp.mount(document.createElement('div')) as ToastInstance
@@ -31,5 +34,3 @@ window.addEventListener('error', (event) => {
   console.error('Global Error:', event.message)
   toastInstance.addToast(event.message || 'Произошла ошибка', 'error')
 })
-
-app.mount('#app')

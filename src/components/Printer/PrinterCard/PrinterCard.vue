@@ -8,28 +8,37 @@ import { coilsService, figuresService, printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
 import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
-import { coilsKey, figuresKey, printersKey } from '@/util/injectionKeys'
-import { computed, inject, ref } from 'vue'
+import { useCoilsStore } from '@/stores/coilsStore'
+import { useFiguresStore } from '@/stores/figuresStore'
+import { usePrintersStore } from '@/stores/printersStore'
+import { ref } from 'vue'
 import ProgressBar from '../ProgressBar/ProgressBar.vue'
 
 const props = defineProps<IPrinter>()
 
 const isPrinting = ref(false)
 
-const printers = inject(printersKey)
-const coils = inject(coilsKey)
-const figures = inject(figuresKey)
+// const printers = inject(printersKey)
+// const coils = inject(coilsKey)
+// const figures = inject(figuresKey)
 
-if (!coils || !figures || !printers) {
-  throw new Error('Service is not provided')
-}
-const { getPrintersData } = printers
-const { coilsData, getCoilsData } = coils
-const { figuresData, getFiguresData } = figures
+// if (!coils || !figures || !printers) {
+//   throw new Error('Service is not provided')
+// }
+// const { getPrintersData } = printers
+// const { coilsData, getCoilsData } = coils
+// const { figuresData, getFiguresData } = figures
 
-const incompleteFigures = computed(() => {
-  return figuresData.value.filter((figure) => !figure.isCompleted)
-})
+const printersStore = usePrintersStore()
+const coilsStore = useCoilsStore()
+const figuresStore = useFiguresStore()
+
+const coilsData = coilsStore.getCoils
+const figuresData = ref(figuresStore.getBlueprints)
+
+// const incompleteFigures = computed(() => {
+//   return figuresData.value.filter((figure) => !figure.isCompleted)
+// })
 
 const isRefillMode = ref(false)
 const isQueueMode = ref(false)
@@ -51,14 +60,15 @@ const { fields, errors, validateFields } = useFieldValidation(
 )
 
 const queueHandle = () => {
-  if (incompleteFigures.value.length === 0) {
+  figuresData.value = figuresStore.getBlueprints
+  if (figuresData.value.length === 0) {
     throw new CustomError('No figures, create at least one in figures tab')
   }
   isQueueMode.value = !isQueueMode.value
 }
 
 const refillHandle = () => {
-  if (coilsData.value.length === 0) {
+  if (coilsData.length === 0) {
     throw new CustomError('No coils, create at least one in coils tab')
   }
   isRefillMode.value = !isRefillMode.value
@@ -74,16 +84,14 @@ const editPrinter = () => {
     throw new CustomError("Speed can't be negative or null")
   }
   if (validateFields()) {
-    printersService
-      .updateData(props.id, {
-        ...props,
-        name: fields.printerName.value,
-        brand: fields.printerBrand.value,
-        speed: fields.printerSpeed.value,
-      })
-      .then(() => {
-        getPrintersData()
-      })
+    const editedPrinter: IPrinter = {
+      ...props,
+      name: fields.printerName.value,
+      brand: fields.printerBrand.value,
+      speed: fields.printerSpeed.value,
+    }
+    printersStore.updatePrinter(editedPrinter)
+    printersService.updateData(props.id, editedPrinter)
     toastInstance.addToast('Printer edited!', 'success')
   } else {
     throw new CustomError('Invalid fields')
@@ -100,12 +108,12 @@ const addToQueue = () => {
         queue: [...props.queue, selectedFigure.value],
       })
     }
-    toastInstance.addToast(`${selectedFigure.value.name} added to queue!`, 'success')
-    figuresService.deleteData(selectedFigure.value.id).then(() => {
-      getPrintersData()
-      getFiguresData()
-    })
+    printersStore.addToQueue(props.id, selectedFigure.value)
 
+    toastInstance.addToast(`${selectedFigure.value.name} added to queue!`, 'success')
+    figuresStore.deleteFigure(selectedFigure.value.id)
+    figuresService.deleteData(selectedFigure.value.id)
+    selectedFigure.value = 'placeholder'
     return
   }
   throw new CustomError('Choose a figure!')
@@ -119,10 +127,10 @@ const refill = () => {
     throw new CustomError('Coil is already installed')
   }
   if (selectedCoil.value !== 'placeholder') {
+    printersStore.addCoil(props.id, selectedCoil.value)
+    coilsStore.deleteCoil(selectedCoil.value.id)
     printersService.updateData(props.id, { ...props, coil: selectedCoil.value })
-    coilsService.deleteData(selectedCoil.value.id).then(() => {
-      getPrintersData()
-    })
+    coilsService.deleteData(selectedCoil.value.id)
     toastInstance.addToast('Coil refilled!', 'success')
     return
   }
@@ -166,14 +174,11 @@ const print = (): void => {
           progress.value = 0
           toastInstance.addToast(error.message, 'error')
           if (!props.queue) return
-          printersService
-            .updateData(props.id, {
-              ...props,
-              queue: props.queue.slice(1),
-            })
-            .then(() => {
-              getPrintersData()
-            })
+          printersStore.removeFromQueue(props.id, props.queue[0].id)
+          printersService.updateData(props.id, {
+            ...props,
+            queue: props.queue.slice(1),
+          })
           return
 
         case 'electricity':
@@ -190,13 +195,13 @@ const print = (): void => {
       }
 
       toastInstance.addToast(`${currentFigure.name} is printed!`, 'success')
-
+      figuresStore.addFigure({ ...currentFigure, color: props.coil.color, isCompleted: true })
       figuresService.postData({
         ...currentFigure,
         color: props.coil.color,
         isCompleted: true,
       })
-
+      printersStore.removeFromQueue(props.id, props.queue[0].id)
       printersService
         .updateData(props.id, {
           ...props,
@@ -204,27 +209,23 @@ const print = (): void => {
           coil: { ...props.coil, length: props.coil.length - perimeterPrintedFigure },
         })
         .then(() => {
-          getPrintersData().then(() => {
-            getCoilsData()
-            clearInterval(timer)
-            isPrinting.value = false
+          clearInterval(timer)
+          isPrinting.value = false
 
-            if (props.queue!.length > 0) {
-              progress.value = 0
-              print()
-            }
+          if (props.queue!.length > 0) {
             progress.value = 0
-          })
+            print()
+          }
+          progress.value = 0
         })
     }
   }, onePercentTime)
 }
 
 const deletePrinter = () => {
-  printersService.deleteData(props.id).then(() => {
-    toastInstance.addToast(props.name + ' deleted!', 'warning')
-    getPrintersData()
-  })
+  toastInstance.addToast(props.name + ' deleted!', 'warning')
+  printersStore.deletePrinter(props.id)
+  printersService.deleteData(props.id)
 }
 </script>
 
@@ -294,7 +295,7 @@ const deletePrinter = () => {
       <ul class="flex flex-column px-2 py-3 border-round-lg gap-2" v-if="queue?.length">
         <h3 class="c-accent">Queue</h3>
         <FigureCard
-          v-for="item in queue"
+          v-for="item in props.queue"
           :key="item.id"
           :id="item.id"
           :name="item.name"
@@ -329,7 +330,7 @@ const deletePrinter = () => {
       <select v-model="selectedFigure" name="coil">
         <option selected disabled hidden value="placeholder">Chose a figure</option>
         <option
-          v-for="item in incompleteFigures"
+          v-for="item in figuresData"
           :key="item.id"
           :value="item"
           :label="item.name + ', ' + item.perimeter + 'm'"

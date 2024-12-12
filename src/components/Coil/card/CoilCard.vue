@@ -7,22 +7,26 @@ import { colorsLib } from '@/data/static'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
 import type { ICoil, IPrinter } from '@/model/interfaces'
-import { coilsKey, printersKey } from '@/util/injectionKeys'
-import { inject, ref } from 'vue'
+import { useCoilsStore } from '@/stores/coilsStore'
+import { usePrintersStore } from '@/stores/printersStore'
+import { ref } from 'vue'
 
 const props = defineProps<ICoil & { printerProps?: IPrinter } & { isPrinting?: boolean }>()
 
 const colors = useColors(props.color)
 
-const printers = inject(printersKey)
-const coils = inject(coilsKey)
+// const printers = inject(printersKey)
+// const coils = inject(coilsKey)
 
-if (!coils || !printers) {
-  throw new Error('Service is not provided')
-}
+// if (!coils || !printers) {
+//   throw new Error('Service is not provided')
+// }
 
-const { getCoilsData } = coils
-const { getPrintersData } = printers
+// const { getCoilsData } = coils
+// const { getPrintersData } = printers
+
+const coilsStore = useCoilsStore()
+const printersStore = usePrintersStore()
 
 const isCuttingMode = ref(false)
 const cutLength = ref(0)
@@ -49,95 +53,83 @@ const editCoil = () => {
     throw new CustomError("Length can't be negative or null")
   }
   toastInstance.addToast('Coil edited!', 'success')
-  if (props.printerProps) {
-    if (validateFields()) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { printerProps, isPrinting, length, ...filteredProps } = props
-      printersService
-        .updateData(props.printerProps.id, {
-          ...props.printerProps,
-          coil: {
-            ...filteredProps,
-            material: fields.coilMaterial.value,
-            color: fields.coilColor.value,
-            length: fields.coilLength.value,
-          },
-        })
-        .then(() => {
-          getPrintersData()
-        })
-    } else {
-      throw new CustomError('Invalid fields')
+  if (validateFields()) {
+    const editedCoil = {
+      ...props,
+      material: fields.coilMaterial.value,
+      color: fields.coilColor.value,
+      length: fields.coilLength.value,
     }
-    return
+    coilsStore.updateCoil(editedCoil)
+    coilsService.updateData(props.id, editedCoil)
   } else {
-    if (validateFields()) {
-      coilsService
-        .updateData(props.id, {
-          ...props,
-          material: fields.coilMaterial.value,
-          color: fields.coilColor.value,
-          length: fields.coilLength.value,
-        })
-        .then(() => {
-          getCoilsData()
-        })
-    } else {
-      throw new CustomError('Invalid fields')
-    }
+    throw new CustomError('Invalid fields')
   }
 }
 
 const cuttingModeHandle = () => (isCuttingMode.value = !isCuttingMode.value)
 
 const deleteCoil = () => {
-  toastInstance.addToast(`Coil is Deleted`, 'warning')
   if (props.printerProps) {
-    printersService
-      .updateData(props.printerProps.id, {
-        ...props.printerProps,
-        coil: null,
-      })
-      .then(() => {
-        getPrintersData()
-      })
+    toastInstance.addToast(`Coil returned`, 'warning')
+    const printerWithoutCoil = {
+      ...props.printerProps,
+      coil: null,
+    }
+    const coilWithoutPrinterProps: ICoil = {
+      id: props.id,
+      material: props.material,
+      color: props.color,
+      length: props.length,
+      imgUrl: props.imgUrl,
+    }
+    coilsStore.addCoil(coilWithoutPrinterProps)
+    printersStore.updatePrinter(printerWithoutCoil)
+    coilsService.postData(coilWithoutPrinterProps)
+    printersService.updateData(props.printerProps.id, printerWithoutCoil)
     return
   }
-  coilsService.deleteData(props.id).then(() => {
-    getCoilsData()
-  })
+  toastInstance.addToast(`Coil is Deleted`, 'warning')
+  coilsStore.deleteCoil(props.id)
+  coilsService.deleteData(props.id)
 }
 
 const cut = () => {
   if (cutLength.value <= 0) {
     throw new CustomError('Cut length must be bigger than 0')
   }
-  if (cutLength.value >= fields.coilLength.value) {
-    fields.coilLength.value = 0
-    coilsService.deleteData(props.id)
-    throw new CustomError('Cut length is bigger than coil length')
-  }
+
   if (props.printerProps) {
-    printersService.updateData(props.printerProps.id, {
-      ...props.printerProps,
-      coil: null,
-    })
-    toastInstance.addToast(`Coil is cutted`, 'success')
-  }
-  fields.coilLength.value -= cutLength.value
-  if (props.printerProps) {
+    if (cutLength.value >= fields.coilLength.value) {
+      const printerWithoutCoil: IPrinter = {
+        ...props.printerProps,
+        coil: null,
+      }
+      printersStore.updatePrinter(printerWithoutCoil)
+      printersService.updateData(props.printerProps.id, printerWithoutCoil)
+      throw new CustomError('Cut length is bigger than coil length, coil removed')
+    }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { printerProps, length, ...filteredProps } = props
-    printersService.updateData(props.printerProps.id, {
+    const printerWithShortCoil: IPrinter = {
       ...props.printerProps,
-      coil: { ...filteredProps, length: fields.coilLength.value },
-    })
+      coil: { ...filteredProps, length: fields.coilLength.value - cutLength.value },
+    }
+    printersStore.updatePrinter(printerWithShortCoil)
+    printersService.updateData(props.printerProps.id, printerWithShortCoil)
     toastInstance.addToast(`Coil is cutted`, 'success')
     return
   }
-  coilsService.updateData(props.id, { ...props, length: fields.coilLength.value }).then(() => {
-    getCoilsData()
-  })
+  if (cutLength.value >= fields.coilLength.value) {
+    fields.coilLength.value = 0
+    coilsStore.deleteCoil(props.id)
+    coilsService.deleteData(props.id)
+    throw new CustomError('Cut length is bigger than coil length, coil removed')
+  }
+  fields.coilLength.value -= cutLength.value
+  const updatedCoil: ICoil = { ...props, length: fields.coilLength.value }
+  coilsStore.updateCoil(updatedCoil)
+  coilsService.updateData(props.id, updatedCoil)
   toastInstance.addToast(`Coil is cutted`, 'success')
 }
 </script>
@@ -166,7 +158,7 @@ const cut = () => {
             />
           </svg>
         </button>
-        <button @click="editModeHandle">
+        <button v-if="!props.printerProps" @click="editModeHandle">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -180,8 +172,9 @@ const cut = () => {
             />
           </svg>
         </button>
-        <button @click="deleteCoil">
+        <button class="pt-2" @click="deleteCoil">
           <svg
+            v-if="!props.printerProps"
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
@@ -196,11 +189,25 @@ const cut = () => {
               d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
             />
           </svg>
+          <svg
+            v-else
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            fill="currentColor"
+            class="bi bi-arrow-return-right"
+            viewBox="0 0 16 16"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"
+            />
+          </svg>
         </button>
       </div>
     </div>
     <img
-      width="150px"
+      width="100px"
       :src="imgUrl ? imgUrl : 'coil.webp'"
       alt="coil-image"
       :style="{ filter: 'hue-rotate(' + colors?.rotate + 'deg)' }"

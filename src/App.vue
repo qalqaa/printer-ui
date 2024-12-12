@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { onMounted, provide, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { RouterView, useRouter } from 'vue-router'
-import { CustomError } from './model/error/customError'
 import { coilsService, figuresService, printersService } from './data/api/api'
+import { CustomError } from './model/error/customError'
 import type { ICoil, IFigure, IPrinter } from './model/interfaces'
-import { coilsKey, figuresKey, printersKey } from './util/injectionKeys'
+import { useCoilsStore } from './stores/coilsStore'
+import { useFiguresStore } from './stores/figuresStore'
+import { usePrintersStore } from './stores/printersStore'
+
+const printersStore = usePrintersStore()
+const coilsStore = useCoilsStore()
+const figuresStore = useFiguresStore()
 
 const printersData = ref<IPrinter[]>([])
 const coilsData = ref<ICoil[]>([])
@@ -45,7 +51,11 @@ const getFiguresData = async () => {
 
 const render = async () => {
   try {
-    await Promise.all([getPrintersData(), getCoilsData(), getFiguresData()])
+    await Promise.all([getPrintersData(), getCoilsData(), getFiguresData()]).then(() => {
+      printersStore.addArrayPrinters(printersData.value)
+      coilsStore.addArrayCoils(coilsData.value)
+      figuresStore.addArrayFigures(figuresData.value)
+    })
   } catch (error) {
     if (error instanceof Error) {
       throw new CustomError(error.message)
@@ -55,19 +65,6 @@ const render = async () => {
 
 onMounted(() => {
   render()
-})
-
-provide(printersKey, {
-  printersData,
-  getPrintersData,
-})
-provide(coilsKey, {
-  coilsData,
-  getCoilsData,
-})
-provide(figuresKey, {
-  figuresData,
-  getFiguresData,
 })
 
 const router = useRouter()
@@ -88,7 +85,6 @@ const router = useRouter()
       </div>
     </nav>
   </header>
-  <div></div>
   <RouterView />
   <footer
     class="fixed bottom-0 p-2 w-full flex justify-content-center align-items-center bg-color-soft"

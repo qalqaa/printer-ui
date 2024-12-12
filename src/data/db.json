@@ -6,20 +6,13 @@
       "brand": "Apple",
       "speed": 111,
       "coil": {
-        "id": "k3wsi19",
-        "material": "123",
-        "color": "orange",
-        "length": 123
+        "id": "jypspo9",
+        "material": "ABS",
+        "color": "blue",
+        "length": 1199,
+        "imgUrl": "coil.webp"
       },
-      "queue": [
-        {
-          "id": "ktbhgzn",
-          "isCompleted": false,
-          "name": "213",
-          "perimeter": 2,
-          "imgUrl": "figure.png"
-        }
-      ],
+      "queue": [],
       "imgUrl": "Iprinter.png"
     },
     {
@@ -41,6 +34,42 @@
       "imgUrl": "LenovoPrinter.png"
     }
   ],
-  "coils": [],
-  "figures": []
+  "coils": [
+    {
+      "id": "xtprzup",
+      "material": "PLA",
+      "color": "red",
+      "length": 998
+    },
+    {
+      "id": "rlmgafm",
+      "material": "PBT",
+      "color": "green",
+      "length": 495.9
+    }
+  ],
+  "figures": [
+    {
+      "id": "lqy29gt",
+      "isCompleted": false,
+      "name": "eee",
+      "perimeter": 1,
+      "imgUrl": "figure.png"
+    },
+    {
+      "id": "l2glxe6",
+      "isCompleted": false,
+      "name": "ggg",
+      "perimeter": 1,
+      "imgUrl": "figure.png"
+    },
+    {
+      "id": "dgk6a0m",
+      "isCompleted": true,
+      "name": "aaa",
+      "perimeter": 1,
+      "imgUrl": "figure.png",
+      "color": "blue"
+    }
+  ]
 }

@@ -6,17 +6,23 @@ import { useIds } from '@/composables/useIds'
 import { figuresService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
-import { figuresKey } from '@/util/injectionKeys'
-import { computed, inject, onMounted, ref, watch } from 'vue'
+import type { IFigure } from '@/model/interfaces'
+import { useFiguresStore } from '@/stores/figuresStore'
+import { computed, onMounted, ref } from 'vue'
 import DefaultView from './DefaultView.vue'
 
-const figures = inject(figuresKey)
+// const figures = inject(figuresKey)
 
-if (!figures) {
-  throw new Error('Figures service is not provided')
-}
+// if (!figures) {
+//   throw new Error('Figures service is not provided')
+// }
 
-const { figuresData, getFiguresData } = figures
+// const { figuresData, getFiguresData } = figures
+
+const figuresStore = useFiguresStore()
+const figuresData = computed(() => {
+  return figuresStore.getBlueprints
+})
 
 const loading = ref(true)
 const isCreatingModeTrue = ref(false)
@@ -41,17 +47,15 @@ const createFigure = async () => {
     throw new CustomError("Perimeter can't be negative or null")
   }
   if (validateFields()) {
-    figuresService
-      .postData({
-        id: useIds(),
-        isCompleted: false,
-        name: fields.figureName.value,
-        perimeter: fields.figurePerimeter.value,
-        imgUrl: 'figure.png',
-      })
-      .then(() => {
-        getFiguresData()
-      })
+    const createdFigure: IFigure = {
+      id: useIds(),
+      isCompleted: false,
+      name: fields.figureName.value,
+      perimeter: fields.figurePerimeter.value,
+      imgUrl: 'figure.png',
+    }
+    figuresStore.addFigure(createdFigure)
+    figuresService.postData(createdFigure)
     toastInstance.addToast(fields.figureName.value + ' created!', 'success')
   } else {
     isCreatingModeTrue.value = false
@@ -60,28 +64,13 @@ const createFigure = async () => {
 }
 
 onMounted(() => {
-  getFiguresData()
-  if (figuresData.value.length === 0) {
-    loading.value = false
-  }
-})
-
-const incompleteFigures = computed(() => {
-  return figuresData.value.filter((figure) => !figure.isCompleted)
-})
-
-watch(figuresData, () => {
   loading.value = false
 })
 </script>
 <template>
   <DefaultView title="Figures" :loading="loading" :create-handle="creatingModeHandle">
     <template #list>
-      <FigureList
-        id="FigureList"
-        v-if="incompleteFigures.length !== 0"
-        :items="incompleteFigures"
-      />
+      <FigureList id="FigureList" v-if="figuresData.length !== 0" :items="figuresData" />
       <p v-else>No figures found 😫</p>
     </template>
     <template #dialog>

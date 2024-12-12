@@ -6,19 +6,23 @@ import { figuresService, printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
 import type { IColor, IFigure, IPrinter } from '@/model/interfaces'
-import { figuresKey, printersKey } from '@/util/injectionKeys'
-import { inject, ref } from 'vue'
+import { useFiguresStore } from '@/stores/figuresStore'
+import { usePrintersStore } from '@/stores/printersStore'
+import { ref } from 'vue'
 
-const figure = inject(figuresKey)
-const printers = inject(printersKey)
-
-if (!figure || !printers) {
-  throw new Error('Service is not provided')
-}
 const props = defineProps<IFigure & { printerProps?: IPrinter } & { isPrinting?: boolean }>()
 
-const { getFiguresData } = figure
-const { getPrintersData } = printers
+// const figure = inject(figuresKey)
+// const printers = inject(printersKey)
+
+// if (!figure || !printers) {
+//   throw new Error('Service is not provided')
+// }
+// const { getFiguresData } = figure
+// const { getPrintersData } = printers
+
+const figureStore = useFiguresStore()
+const printersStore = usePrintersStore()
 
 const colors = ref<IColor | undefined>({ color: 'red', rotate: 0 })
 if (props.color) {
@@ -42,44 +46,39 @@ const { fields, errors, validateFields } = useFieldValidation(
 const editFigure = () => {
   if (fields.figurePerimeter.value <= 0) {
     errors.figurePerimeter.value = true
-
     throw new CustomError("Perimeter can't be negative or null")
   }
   if (props.printerProps) {
     if (props.printerProps.queue) {
-      printersService
-        .updateData(props.printerProps.id, {
-          ...props.printerProps,
-          queue: [
-            ...props.printerProps.queue.map((item) => {
-              if (item.id === props.id) {
-                return {
-                  ...item,
-                  name: fields.figureName.value,
-                  perimeter: fields.figurePerimeter.value,
-                }
+      const printerWithEditedFigure = {
+        ...props.printerProps,
+        queue: [
+          ...props.printerProps.queue.map((item) => {
+            if (item.id === props.id) {
+              return {
+                ...item,
+                name: fields.figureName.value,
+                perimeter: fields.figurePerimeter.value,
               }
-              return item
-            }),
-          ],
-        })
-        .then(() => {
-          toastInstance.addToast(`${props.name} edited!`, 'success')
-          getPrintersData()
-        })
+            }
+            return item
+          }),
+        ],
+      }
+      printersStore.updatePrinter(printerWithEditedFigure)
+      printersService.updateData(props.printerProps.id, printerWithEditedFigure)
+      toastInstance.addToast(`${props.name} edited!`, 'success')
     }
     return
   }
   if (validateFields()) {
-    figuresService
-      .updateData(props.id, {
-        ...props,
-        name: fields.figureName.value,
-        perimeter: fields.figurePerimeter.value,
-      })
-      .then(() => {
-        getFiguresData()
-      })
+    const updatedFigure: IFigure = {
+      ...props,
+      name: fields.figureName.value,
+      perimeter: fields.figurePerimeter.value,
+    }
+    figureStore.updateFigure(updatedFigure)
+    figuresService.updateData(props.id, updatedFigure)
     toastInstance.addToast(`${props.name} edited!`, 'success')
   } else {
     throw new CustomError('Fill all required fields')
@@ -90,20 +89,17 @@ const deleteFigure = () => {
   toastInstance.addToast(`${props.name} deleted!`, 'warning')
   if (props.printerProps) {
     if (props.printerProps.queue) {
-      printersService
-        .updateData(props.printerProps.id, {
-          ...props.printerProps,
-          queue: props.printerProps.queue.filter((item) => item.id !== props.id),
-        })
-        .then(() => {
-          getPrintersData()
-        })
+      const printerWithoutFigure: IPrinter = {
+        ...props.printerProps,
+        queue: props.printerProps.queue.filter((item) => item.id !== props.id),
+      }
+      printersStore.updatePrinter(printerWithoutFigure)
+      printersService.updateData(props.printerProps.id, printerWithoutFigure)
     }
     return
   }
-  figuresService.deleteData(props.id).then(() => {
-    getFiguresData()
-  })
+  figureStore.deleteFigure(props.id)
+  figuresService.deleteData(props.id)
 }
 </script>
 

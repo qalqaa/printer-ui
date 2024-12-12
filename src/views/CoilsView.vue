@@ -7,17 +7,13 @@ import { coilsService } from '@/data/api/api'
 import { colorsLib } from '@/data/static'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
-import { coilsKey } from '@/util/injectionKeys'
-import { inject, onMounted, ref, watch } from 'vue'
+import type { ICoil } from '@/model/interfaces'
+import { useCoilsStore } from '@/stores/coilsStore'
+import { onMounted, ref } from 'vue'
 import DefaultView from './DefaultView.vue'
 
-const coils = inject(coilsKey)
-
-if (!coils) {
-  throw new CustomError('Coils service is not provided')
-}
-
-const { coilsData, getCoilsData } = coils
+const coilsStore = useCoilsStore()
+const coilsData = coilsStore.getCoils
 
 const loading = ref(true)
 const isCreatingModeTrue = ref(false)
@@ -44,17 +40,15 @@ const createCoil = async () => {
     throw new CustomError("Length can't be negative or null")
   }
   if (validateFields()) {
-    coilsService
-      .postData({
-        id: useIds(),
-        material: fields.coilMaterial.value,
-        color: fields.coilColor.value,
-        length: fields.coilLength.value,
-        imgUrl: 'coil.webp',
-      })
-      .then(() => {
-        getCoilsData()
-      })
+    const createdCoil: ICoil = {
+      id: useIds(),
+      material: fields.coilMaterial.value,
+      color: fields.coilColor.value,
+      length: fields.coilLength.value,
+      imgUrl: 'coil.webp',
+    }
+    coilsStore.addCoil(createdCoil)
+    coilsService.postData(createdCoil)
     toastInstance.addToast('Coil created!', 'success')
   } else {
     isCreatingModeTrue.value = false
@@ -63,13 +57,6 @@ const createCoil = async () => {
 }
 
 onMounted(() => {
-  getCoilsData()
-  if (coilsData.value.length === 0) {
-    loading.value = false
-  }
-})
-
-watch(coilsData, () => {
   loading.value = false
 })
 </script>

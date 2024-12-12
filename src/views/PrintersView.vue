@@ -6,17 +6,13 @@ import { useIds } from '@/composables/useIds'
 import { printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
-import { printersKey } from '@/util/injectionKeys'
-import { inject, ref, watch } from 'vue'
+import type { IPrinter } from '@/model/interfaces'
+import { usePrintersStore } from '@/stores/printersStore'
+import { onMounted, ref } from 'vue'
 import DefaultView from './DefaultView.vue'
 
-const printers = inject(printersKey)
-
-if (!printers) {
-  throw new CustomError('Printers service is not provided')
-}
-
-const { printersData, getPrintersData } = printers
+const printersStore = usePrintersStore()
+const printersData = printersStore.getPrinters
 
 const loading = ref(true)
 const isCreatingModeTrue = ref(false)
@@ -43,19 +39,17 @@ const createPrinter = async () => {
     throw new CustomError("Speed can't be negative or null")
   }
   if (validateFields()) {
-    printersService
-      .postData({
-        id: useIds(),
-        name: fields.printerName.value,
-        speed: fields.printerSpeed.value,
-        brand: fields.printerBrand.value,
-        imgUrl: '3d-printer.png',
-        coil: null,
-        queue: [],
-      })
-      .then(() => {
-        getPrintersData()
-      })
+    const postedPrinter: IPrinter = {
+      id: useIds(),
+      name: fields.printerName.value,
+      speed: fields.printerSpeed.value,
+      brand: fields.printerBrand.value,
+      imgUrl: '3d-printer.png',
+      coil: null,
+      queue: [],
+    }
+    printersStore.addPrinter(postedPrinter)
+    printersService.postData(postedPrinter)
     toastInstance.addToast(fields.printerName.value + ' created', 'success')
   } else {
     isCreatingModeTrue.value = false
@@ -63,11 +57,8 @@ const createPrinter = async () => {
   }
 }
 
-if (printersData.value.length !== 0) {
-  loading.value = false
-}
-
-watch(printersData, () => {
+onMounted(() => {
+  console.log(printersData)
   loading.value = false
 })
 </script>
