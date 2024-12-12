@@ -32,6 +32,15 @@ export const usePrintersStore = defineStore('printersStore', {
         }
       })
     },
+    shortenCoil(id: string, shortenLength: number) {
+      this.printers.forEach((printer) => {
+        if (printer.id === id && printer.coil) {
+          let updatedLength = printer.coil.length * 1000
+          updatedLength -= shortenLength
+          printer.coil.length = Math.max(updatedLength / 1000, 0)
+        }
+      })
+    },
     addCoil(id: string, coil: ICoil) {
       this.printers.forEach((printer) => {
         if (printer.id === id) {

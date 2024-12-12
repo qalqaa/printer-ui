@@ -18,16 +18,7 @@ const props = defineProps<IPrinter>()
 
 const isPrinting = ref(false)
 
-// const printers = inject(printersKey)
-// const coils = inject(coilsKey)
-// const figures = inject(figuresKey)
-
-// if (!coils || !figures || !printers) {
-//   throw new Error('Service is not provided')
-// }
-// const { getPrintersData } = printers
-// const { coilsData, getCoilsData } = coils
-// const { figuresData, getFiguresData } = figures
+console.log()
 
 const printersStore = usePrintersStore()
 const coilsStore = useCoilsStore()
@@ -151,6 +142,7 @@ const print = (): void => {
   const currentFigure = props.queue[0]
   const perimeterPrintedFigure = currentFigure.perimeter
   const onePercentTime = (perimeterPrintedFigure * 10000) / props.speed
+  const filamentPerTick = Math.round((perimeterPrintedFigure / 100) * 1000)
 
   if (!props.coil || props.coil.length < perimeterPrintedFigure) {
     isPrinting.value = false
@@ -186,8 +178,10 @@ const print = (): void => {
       }
     }
 
-    if (progress.value < 100) {
+    if (progress.value < 100 && props.coil) {
       progress.value++
+      console.log(filamentPerTick)
+      printersStore.shortenCoil(props.id, filamentPerTick)
     } else {
       if (!props.coil || !props.queue || props.queue.length === 0) {
         return
@@ -205,7 +199,7 @@ const print = (): void => {
         .updateData(props.id, {
           ...props,
           queue: props.queue.slice(1),
-          coil: { ...props.coil, length: props.coil.length - perimeterPrintedFigure },
+          coil: { ...props.coil, length: props.coil.length },
         })
         .then(() => {
           clearInterval(timer)
