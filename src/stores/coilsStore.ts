@@ -7,6 +7,7 @@ export const useCoilsStore = defineStore('coilStore', {
   }),
   getters: {
     getCoils: (state) => state.coils,
+    getCoilById: (state) => (id: string) => state.coils.find((coil) => coil.id === id),
   },
   actions: {
     addCoil(coil: ICoil) {

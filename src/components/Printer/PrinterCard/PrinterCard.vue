@@ -224,8 +224,8 @@ const print = (): void => {
 
 const deletePrinter = () => {
   toastInstance.addToast(props.name + ' deleted!', 'warning')
-  printersStore.deletePrinter(props.id)
   printersService.deleteData(props.id)
+  printersStore.deletePrinter(props.id)
 }
 </script>
 

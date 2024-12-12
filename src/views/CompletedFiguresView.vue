@@ -4,13 +4,10 @@ import FigureList from '@/components/Figure/list/FigureList.vue'
 import { figuresService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { useFiguresStore } from '@/stores/figuresStore'
-import { computed, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import DefaultView from './DefaultView.vue'
 
 const figuresStore = useFiguresStore()
-const figuresData = computed(() => {
-  return figuresStore.getCompletedFigures
-})
 
 const loading = ref(true)
 
@@ -25,7 +22,7 @@ onMounted(() => {
 
 const deleteAllCompletedFigures = () => {
   toastInstance.addToast('All completed figures deleted!', 'warning')
-  for (const item of figuresData.value) {
+  for (const item of figuresStore.getCompletedFigures) {
     figuresService.deleteData(item.id)
   }
   figuresStore.deleteAllCompletedFigures()
@@ -35,7 +32,10 @@ const deleteAllCompletedFigures = () => {
 <template>
   <DefaultView title="Completed Figures" :otherHandle="confirmModeHandle" :loading="loading">
     <template #list>
-      <FigureList v-if="figuresData.length !== 0" :items="figuresData" />
+      <FigureList
+        v-if="figuresStore.getCompletedFigures.length !== 0"
+        :items="figuresStore.getCompletedFigures"
+      />
       <p v-else>No completed figures found</p>
     </template>
   </DefaultView>

@@ -4,14 +4,8 @@
       "id": "bfxyqee",
       "name": "Iprinter",
       "brand": "Apple",
-      "speed": 111,
-      "coil": {
-        "id": "jypspo9",
-        "material": "ABS",
-        "color": "blue",
-        "length": 1199,
-        "imgUrl": "coil.webp"
-      },
+      "speed": 100,
+      "coil": null,
       "queue": [],
       "imgUrl": "Iprinter.png"
     },
@@ -46,6 +40,13 @@
       "material": "PBT",
       "color": "green",
       "length": 495.9
+    },
+    {
+      "id": "jypspo9",
+      "material": "ABS",
+      "color": "orange",
+      "length": 1199,
+      "isPrinting": false
     }
   ],
   "figures": [
@@ -62,14 +63,6 @@
       "name": "ggg",
       "perimeter": 1,
       "imgUrl": "figure.png"
-    },
-    {
-      "id": "dgk6a0m",
-      "isCompleted": true,
-      "name": "aaa",
-      "perimeter": 1,
-      "imgUrl": "figure.png",
-      "color": "blue"
     }
   ]
 }

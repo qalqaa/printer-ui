@@ -13,7 +13,6 @@ import { onMounted, ref } from 'vue'
 import DefaultView from './DefaultView.vue'
 
 const coilsStore = useCoilsStore()
-const coilsData = coilsStore.getCoils
 
 const loading = ref(true)
 const isCreatingModeTrue = ref(false)
@@ -63,7 +62,7 @@ onMounted(() => {
 <template>
   <DefaultView title="Coils" :loading :create-handle="creatingModeHandle">
     <template #list>
-      <CoilList v-if="coilsData.length !== 0" :items="coilsData" />
+      <CoilList v-if="coilsStore.getCoils.length !== 0" :items="coilsStore.getCoils" />
       <p v-else>No coils found 😢</p>
     </template>
     <template #dialog>

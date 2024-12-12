@@ -12,7 +12,6 @@ import { onMounted, ref } from 'vue'
 import DefaultView from './DefaultView.vue'
 
 const printersStore = usePrintersStore()
-const printersData = printersStore.getPrinters
 
 const loading = ref(true)
 const isCreatingModeTrue = ref(false)
@@ -58,14 +57,16 @@ const createPrinter = async () => {
 }
 
 onMounted(() => {
-  console.log(printersData)
   loading.value = false
 })
 </script>
 <template>
   <DefaultView title="Printers" :loading="loading" :create-handle="creatingModeHandle">
     <template #list>
-      <PrinterList v-if="printersData.length !== 0" :items="printersData" />
+      <PrinterList
+        v-if="printersStore.getPrinters.length !== 0"
+        :items="printersStore.getPrinters"
+      />
       <p v-else>No figures found</p>
     </template>
     <template #dialog>

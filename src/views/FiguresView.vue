@@ -70,7 +70,11 @@ onMounted(() => {
 <template>
   <DefaultView title="Figures" :loading="loading" :create-handle="creatingModeHandle">
     <template #list>
-      <FigureList id="FigureList" v-if="figuresData.length !== 0" :items="figuresData" />
+      <FigureList
+        id="FigureList"
+        v-if="figuresData.length !== 0"
+        :items="figuresStore.getBlueprints"
+      />
       <p v-else>No figures found 😫</p>
     </template>
     <template #dialog>

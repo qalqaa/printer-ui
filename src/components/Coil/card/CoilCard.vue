@@ -13,17 +13,7 @@ import { ref } from 'vue'
 
 const props = defineProps<ICoil & { printerProps?: IPrinter } & { isPrinting?: boolean }>()
 
-const colors = useColors(props.color)
-
-// const printers = inject(printersKey)
-// const coils = inject(coilsKey)
-
-// if (!coils || !printers) {
-//   throw new Error('Service is not provided')
-// }
-
-// const { getCoilsData } = coils
-// const { getPrintersData } = printers
+let colors = useColors(props.color)
 
 const coilsStore = useCoilsStore()
 const printersStore = usePrintersStore()
@@ -60,8 +50,9 @@ const editCoil = () => {
       color: fields.coilColor.value,
       length: fields.coilLength.value,
     }
-    coilsStore.updateCoil(editedCoil)
     coilsService.updateData(props.id, editedCoil)
+    coilsStore.updateCoil(editedCoil)
+    colors = useColors(editedCoil.color)
   } else {
     throw new CustomError('Invalid fields')
   }
