@@ -43,16 +43,17 @@ const editCoil = () => {
     throw new CustomError("Length can't be negative or null")
   }
   toastInstance.addToast('Coil edited!', 'success')
+
   if (validateFields()) {
-    const editedCoil = {
-      ...props,
+    const filteredProps = {
+      id: props.id,
       material: fields.coilMaterial.value,
       color: fields.coilColor.value,
       length: fields.coilLength.value,
     }
-    coilsService.updateData(props.id, editedCoil)
-    coilsStore.updateCoil(editedCoil)
-    colors = useColors(editedCoil.color)
+    coilsService.updateData(props.id, filteredProps)
+    coilsStore.updateCoil(filteredProps)
+    colors = useColors(filteredProps.color)
   } else {
     throw new CustomError('Invalid fields')
   }
