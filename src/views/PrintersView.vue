@@ -66,7 +66,7 @@ onMounted(() => {
         v-if="printersStore.getPrinters.length !== 0"
         :items="printersStore.getPrinters"
       />
-      <p v-else>No printers found</p>
+      <p v-else>No printers found🤨</p>
     </template>
     <template #dialog>
       <DialogWindow
