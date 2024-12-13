@@ -1,18 +1,12 @@
 import PrinterCard from '@/components/Printer/PrinterCard/PrinterCard.vue'
 import { CustomError } from '@/model/error/customError'
 import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
-import { coilsKey, figuresKey, printersKey } from '@/util/injectionKeys'
 import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { ref, type Ref } from 'vue'
 
 describe('Методы запуска печати и установки/снятия катушки', () => {
-  let printersData: Ref<IPrinter[]>,
-    coilsData: Ref<ICoil[]>,
-    figuresData: Ref<IFigure[]>,
-    getPrintersData = vi.fn(),
-    getCoilsData = vi.fn(),
-    getFiguresData = vi.fn()
+  let printersData: Ref<IPrinter[]>, coilsData: Ref<ICoil[]>, figuresData: Ref<IFigure[]>
 
   beforeEach(() => {
     printersData = ref([
@@ -20,10 +14,6 @@ describe('Методы запуска печати и установки/сня�
     ])
     coilsData = ref([{ id: '1', material: 'PLA', color: 'Black', length: 10 }])
     figuresData = ref([{ id: '1', name: 'Figure1', perimeter: 5, isCompleted: false }])
-
-    getPrintersData = vi.fn()
-    getCoilsData = vi.fn()
-    getFiguresData = vi.fn()
   })
 
   it('статус принтера меняется на «печать»', async () => {
@@ -40,13 +30,6 @@ describe('Методы запуска печати и установки/сня�
           length: 10,
         },
         queue: [{ id: '12', name: 'Figure1', perimeter: 5, isCompleted: false }],
-      },
-      global: {
-        provide: {
-          [printersKey]: { printersData, getPrintersData },
-          [coilsKey]: { coilsData, getCoilsData },
-          [figuresKey]: { figuresData, getFiguresData },
-        },
       },
     })
 
@@ -70,16 +53,8 @@ describe('Методы запуска печати и установки/сня�
         },
         queue: [],
       },
-      global: {
-        provide: {
-          [printersKey]: { printersData, getPrintersData },
-          [coilsKey]: { coilsData, getCoilsData },
-          [figuresKey]: { figuresData, getFiguresData },
-        },
-      },
+      global: {},
     })
-
-    wrapper.vm.selectedCoil = 'placeholder'
 
     expect(() => wrapper.vm.print()).toThrow(CustomError)
     expect(() => wrapper.vm.print()).toThrow('No figures in queue')
@@ -102,13 +77,7 @@ describe('Методы запуска печати и установки/сня�
           },
         ],
       },
-      global: {
-        provide: {
-          [printersKey]: { printersData, getPrintersData },
-          [coilsKey]: { coilsData: ref([]), getCoilsData: vi.fn() },
-          [figuresKey]: { figuresData, getFiguresData },
-        },
-      },
+      global: {},
     })
 
     coilsData.value = []
@@ -127,13 +96,7 @@ describe('Методы запуска печати и установки/сня�
         coil: null,
         queue: [],
       },
-      global: {
-        provide: {
-          [printersKey]: { printersData, getPrintersData },
-          [coilsKey]: { coilsData, getCoilsData },
-          [figuresKey]: { figuresData, getFiguresData },
-        },
-      },
+      global: {},
     })
 
     wrapper.vm.selectedCoil = { id: 'ix8rinu', material: 'Plastic', color: 'red', length: 2000 }
@@ -163,13 +126,7 @@ describe('Методы запуска печати и установки/сня�
         },
         queue: [],
       },
-      global: {
-        provide: {
-          [printersKey]: { printersData, getPrintersData },
-          [coilsKey]: { coilsData, getCoilsData },
-          [figuresKey]: { figuresData, getFiguresData },
-        },
-      },
+      global: {},
     })
 
     expect(() =>
@@ -195,13 +152,7 @@ describe('Методы запуска печати и установки/сня�
         },
         queue: [{ id: '12', name: 'Figure1', perimeter: 5, isCompleted: false }],
       },
-      global: {
-        provide: {
-          [printersKey]: { printersData, getPrintersData },
-          [coilsKey]: { coilsData, getCoilsData },
-          [figuresKey]: { figuresData, getFiguresData },
-        },
-      },
+      global: {},
     })
 
     wrapper.vm.isPrinting = true

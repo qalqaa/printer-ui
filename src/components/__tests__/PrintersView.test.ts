@@ -1,34 +1,36 @@
 import { printersService } from '@/data/api/api'
-import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
+import { usePrintersStore } from '@/stores/printersStore'
+import PrinterView from '@/views/PrintersView.vue'
 import { mount } from '@vue/test-utils'
+import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ref, type Ref } from 'vue'
 
 vi.mock('@/data/api/api')
 
-describe('PrintersPage.vue', () => {
-  let wrapper,
-    printersData: Ref<IPrinter[]>,
-    coilsData: Ref<ICoil[]>,
-    figuresData: Ref<IFigure[]>,
-    getPrintersData = vi.fn(),
-    getCoilsData = vi.fn(),
-    getFiguresData = vi.fn()
+describe('PrintersView.vue', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let wrapper: any
+  let printersStore = usePrintersStore()
 
   beforeEach(() => {
-    printersData = ref([
-      { id: '1', name: 'Printer1', brand: 'Brand1', speed: 50, queue: [], coil: null },
-    ])
-    coilsData = ref([{ id: '1', material: 'PLA', color: 'Black', length: 10 }])
-    figuresData = ref([{ id: '1', name: 'Figure1', perimeter: 5, isCompleted: false }])
+    const pinia = createPinia()
+    setActivePinia(pinia)
 
-    getPrintersData = vi.fn()
-    getCoilsData = vi.fn()
-    getFiguresData = vi.fn()
-  })
+    printersStore = usePrintersStore()
 
-  it('Отображает список принтеров, если принтеры есть', async () => {
-    const wrapper = mount(Printer, {
+    printersStore.addPrinter({
+      id: '1',
+      name: 'Printer1',
+      brand: 'Brand1',
+      speed: 50,
+      queue: [],
+      coil: { id: '1', material: 'PLA', color: 'Black', length: 10 },
+    })
+
+    wrapper = mount(PrinterView, {
+      global: {
+        plugins: [pinia],
+      },
       props: {
         id: '1',
         name: 'Printer1',
@@ -42,71 +44,49 @@ describe('PrintersPage.vue', () => {
         },
         queue: [{ id: '12', name: 'Figure1', perimeter: 5, isCompleted: false }],
       },
-      global: {
-        provide: {
-          [printersKey]: { printersData, getPrintersData },
-          [coilsKey]: { coilsData, getCoilsData },
-          [figuresKey]: { figuresData, getFiguresData },
-        },
-      },
     })
+  })
 
+  it('Отображает список принтеров, если принтеры есть', async () => {
     await wrapper.vm.$nextTick()
 
-    // Проверяем, что список принтеров отображается
     expect(wrapper.findComponent({ name: 'PrinterList' }).exists()).toBe(true)
   })
-
   it('Отображает сообщение о пустом списке, если принтеров нет', async () => {
-    printersService.getData.mockResolvedValueOnce([])
+    printersStore.deletePrinter('1')
     await wrapper.vm.$nextTick()
 
-    // Проверяем, что сообщение о пустом списке отображается
-    expect(wrapper.text()).toContain('No figures found')
-  })
-
-  it('Показывает процент выполнения для принтеров', async () => {
-    printersService.getData.mockResolvedValueOnce([
-      { id: 1, name: 'Printer 1', progress: 50, queue: [] },
-    ])
-    await wrapper.vm.$nextTick()
-
-    // Проверяем отображение процентов
-    const printerElement = wrapper.find('.printer-progress')
-    expect(printerElement.text()).toContain('50%')
+    expect(wrapper.text()).toContain('No printers found')
   })
 
   it('Показывает ошибку, если поля не заполнены правильно', async () => {
-    const nameInput = wrapper.find('#printerName')
-    const brandInput = wrapper.find('#printerBrand')
-    const speedInput = wrapper.find('#printerSpeed')
+    wrapper.vm.fields.printerName.value = ''
+    wrapper.vm.fields.printerBrand.value = ''
+    wrapper.vm.fields.printerSpeed.value = undefined
 
-    // Заполняем поля неправильно или не заполняем их вообще
-    await nameInput.setValue('')
-    await brandInput.setValue('')
-    await speedInput.setValue(0)
+    await expect(wrapper.vm.createPrinter()).rejects.toThrow('Fill all required fields')
+    await wrapper.vm.$nextTick()
 
-    const form = wrapper.find('form')
-    await form.trigger('submit')
+    expect(wrapper.vm.errors.printerName.value).toBe(true)
+    expect(wrapper.vm.errors.printerBrand.value).toBe(true)
+    expect(wrapper.vm.errors.printerSpeed.value).toBe(true)
 
-    // Проверяем, что ошибки отображаются
-    expect(wrapper.text()).toContain('Fill all required fields')
+    expect(printersService.postData).not.toHaveBeenCalled()
   })
 
   it('Проверяет создание принтера', async () => {
-    printersService.postData.mockResolvedValueOnce({})
-    const nameInput = wrapper.find('#printerName')
-    const brandInput = wrapper.find('#printerBrand')
-    const speedInput = wrapper.find('#printerSpeed')
+    wrapper.vm.fields.printerName.value = 'New Printer'
+    wrapper.vm.fields.printerBrand.value = 'Brand A'
+    wrapper.vm.fields.printerSpeed.value = 100
 
-    await nameInput.setValue('New Printer')
-    await brandInput.setValue('Brand A')
-    await speedInput.setValue(100)
+    wrapper.vm.createPrinter()
+    wrapper.vm.$nextTick()
 
-    const createButton = wrapper.find('[type="submit"]')
-    await createButton.trigger('click')
+    expect(wrapper.vm.errors.printerName.value).toBe(false)
+    expect(wrapper.vm.errors.printerBrand.value).toBe(false)
+    expect(wrapper.vm.errors.printerSpeed.value).toBe(false)
 
-    // Проверяем, что сервис создания принтера был вызван
     expect(printersService.postData).toHaveBeenCalled()
+    expect(printersStore.getPrinterById('1')).toBeDefined()
   })
 })

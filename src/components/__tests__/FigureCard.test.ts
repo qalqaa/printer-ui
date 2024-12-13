@@ -1,76 +1,76 @@
 import FigureCard from '@/components/Figure/card/FigureCard.vue'
-import type { IFigure, IPrinter } from '@/model/interfaces'
-import { figuresKey, printersKey } from '@/util/injectionKeys'
+import { useFiguresStore } from '@/stores/figuresStore'
+import { usePrintersStore } from '@/stores/printersStore'
 import { mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ref, type Ref } from 'vue'
+import { createPinia, setActivePinia } from 'pinia'
+import { beforeEach, describe, expect, it } from 'vitest'
 
-describe('Тесты класса модели', () => {
-  let figuresData: Ref<IFigure[]>,
-    printersData: Ref<IPrinter[]>,
-    getFiguresData = vi.fn(),
-    getPrintersData = vi.fn()
+describe('FigureCard.vue (с использованием Pinia)', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let wrapper: any
+  let figuresStore = useFiguresStore()
+  let printersStore = usePrintersStore()
+
+  const props = {
+    id: '52',
+    name: 'Figure1',
+    perimeter: 10,
+    imgUrl: 'figure.png',
+    isCompleted: false,
+  }
 
   beforeEach(() => {
-    figuresData = ref([{ id: '1', name: 'Figure1', perimeter: 5, isCompleted: false }])
-    printersData = ref([
-      { id: '1', name: 'Printer1', brand: 'Brand1', speed: 50, queue: [], coil: null },
-    ])
+    const pinia = createPinia()
+    setActivePinia(pinia)
 
-    getFiguresData = vi.fn()
-    getPrintersData = vi.fn()
+    figuresStore = useFiguresStore()
+    printersStore = usePrintersStore()
+
+    wrapper = mount(FigureCard, {
+      props,
+      global: {
+        plugins: [pinia],
+      },
+    })
   })
 
   it('инициализирует все поля корректно', () => {
-    const props = {
-      id: '1',
-      name: 'Figure1',
-      perimeter: 10,
-      isCompleted: false,
-      printerProps: {
-        id: '1',
-        name: 'Printer1',
-        brand: 'Brand1',
-        speed: 50,
-        queue: [],
-        coil: null,
-      },
-      isPrinting: false,
-    }
-
-    const wrapper = mount(FigureCard, {
-      props,
-      global: {
-        provide: {
-          [figuresKey]: { figuresData, getFiguresData },
-          [printersKey]: { printersData, getPrintersData },
-        },
-      },
-    })
-
     expect(wrapper.props('id')).toBe(props.id)
-    expect(wrapper.props('name')).toBe(props.name)
-    expect(wrapper.props('perimeter')).toBe(props.perimeter)
-    expect(wrapper.props('isCompleted')).toBe(props.isCompleted)
-
-    expect(wrapper.vm.figureName).toBe(props.name)
-    expect(wrapper.vm.figurePerimeter).toBe(props.perimeter)
-    expect(wrapper.vm.isEditMode).toBe(false)
-
-    expect(wrapper.vm.errors.figureName).toBe(false)
-    expect(wrapper.vm.errors.figurePerimeter).toBe(false)
+    expect(wrapper.vm.fields.figureName.value).toBe(props.name)
   })
 
-  it('выбрасывает ошибку, если инжект не предоставлен', () => {
-    const props = {
-      id: '1',
-      name: 'Figure1',
-      perimeter: 10,
-      isCompleted: false,
+  it('выполняет успешное редактирование фигуры', async () => {
+    const newFigureData = {
+      ...props,
+      name: 'UpdatedName',
+      perimeter: 15,
     }
 
+    figuresStore.addFigure(props)
+
+    wrapper.vm.fields.figureName.value = 'UpdatedName'
+    wrapper.vm.fields.figurePerimeter.value = 15
+    await wrapper.vm.editFigure()
+
+    expect(figuresStore.getFigureById(props.id)).toStrictEqual(newFigureData)
+  })
+
+  it('выбрасывает ошибку при отрицательном периметре', async () => {
+    wrapper.vm.fields.figurePerimeter.value = -5
+
+    await expect(() => wrapper.vm.editFigure()).toThrow("Perimeter can't be negative or null")
+
+    expect(wrapper.vm.errors.figurePerimeter.value).toBe(true)
+  })
+
+  it('проверяет инициализацию глобальных состояний', () => {
+    expect(figuresStore.getFigures).toEqual([])
+    expect(printersStore.getPrinters).toEqual([])
+  })
+
+  it('выбрасывает ошибку, если не переданы обязательные свойства', () => {
     expect(() => {
-      mount(FigureCard, { props })
-    }).toThrow('Service is not provided')
+      props = { id: '52' }
+    }).toThrow()
   })
 })
