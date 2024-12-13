@@ -51,7 +51,6 @@ const createPrinter = async () => {
     printersService.postData(postedPrinter)
     toastInstance.addToast(fields.printerName.value + ' created', 'success')
   } else {
-    isCreatingModeTrue.value = false
     throw new CustomError('Fill all required fields')
   }
 }
@@ -67,7 +66,7 @@ onMounted(() => {
         v-if="printersStore.getPrinters.length !== 0"
         :items="printersStore.getPrinters"
       />
-      <p v-else>No figures found</p>
+      <p v-else>No printers found</p>
     </template>
     <template #dialog>
       <DialogWindow

@@ -8,18 +8,13 @@ import { CustomError } from '@/model/error/customError'
 import type { IColor, IFigure, IPrinter } from '@/model/interfaces'
 import { useFiguresStore } from '@/stores/figuresStore'
 import { usePrintersStore } from '@/stores/printersStore'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const props = defineProps<IFigure & { printerProps?: IPrinter } & { isPrinting?: boolean }>()
 
-// const figure = inject(figuresKey)
-// const printers = inject(printersKey)
-
-// if (!figure || !printers) {
-//   throw new Error('Service is not provided')
-// }
-// const { getFiguresData } = figure
-// const { getPrintersData } = printers
+if (!props.name || !props.perimeter || props.isCompleted === undefined) {
+  throw new CustomError('Invalid figure props')
+}
 
 const figureStore = useFiguresStore()
 const printersStore = usePrintersStore()
@@ -72,8 +67,15 @@ const editFigure = () => {
     return
   }
   if (validateFields()) {
+    const filteredProps = {
+      id: props.id,
+      name: props.name,
+      perimeter: props.perimeter,
+      imgUrl: props.imgUrl,
+      isCompleted: props.isCompleted,
+    }
     const updatedFigure: IFigure = {
-      ...props,
+      ...filteredProps,
       name: fields.figureName.value,
       perimeter: fields.figurePerimeter.value,
     }

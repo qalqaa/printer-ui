@@ -11,14 +11,6 @@ import { useFiguresStore } from '@/stores/figuresStore'
 import { computed, onMounted, ref } from 'vue'
 import DefaultView from './DefaultView.vue'
 
-// const figures = inject(figuresKey)
-
-// if (!figures) {
-//   throw new Error('Figures service is not provided')
-// }
-
-// const { figuresData, getFiguresData } = figures
-
 const figuresStore = useFiguresStore()
 const figuresData = computed(() => {
   return figuresStore.getBlueprints
