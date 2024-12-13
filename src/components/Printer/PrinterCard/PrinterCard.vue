@@ -300,7 +300,9 @@ const deletePrinter = () => {
       </ul>
       <button :class="{ disabled: isPrinting }" @click="queueHandle">Add to queue</button>
       <p>Print Speed: {{ speed }}mm/s</p>
-      <p>Print status: {{ isPrinting ? `printing... ` + progress + '%' : 'offline' }}</p>
+      <p id="print-status">
+        "Print status: {{ isPrinting ? `printing... ` + progress + '%' : 'offline' }}
+      </p>
       <ProgressBar :progress="progress" />
       <button :class="{ disabled: isPrinting }" :disabled="isPrinting" @click="print">Print</button>
     </div>

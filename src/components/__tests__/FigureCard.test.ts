@@ -39,6 +39,25 @@ describe('FigureCard.vue (с использованием Pinia)', () => {
     expect(wrapper.vm.fields.figureName.value).toBe(props.name)
   })
 
+  it('выбрасывает ошибку, если не переданы обязательные свойства', () => {
+    expect(() => {
+      props = { id: '52' }
+    }).toThrow()
+  })
+
+  it('выбрасывает ошибку при отрицательном периметре', async () => {
+    wrapper.vm.fields.figurePerimeter.value = -5
+
+    await expect(() => wrapper.vm.editFigure()).toThrow("Perimeter can't be negative or null")
+
+    expect(wrapper.vm.errors.figurePerimeter.value).toBe(true)
+  })
+
+  it('проверяет инициализацию глобальных состояний', () => {
+    expect(figuresStore.getFigures).toEqual([])
+    expect(printersStore.getPrinters).toEqual([])
+  })
+
   it('выполняет успешное редактирование фигуры', async () => {
     const newFigureData = {
       ...props,
@@ -55,22 +74,11 @@ describe('FigureCard.vue (с использованием Pinia)', () => {
     expect(figuresStore.getFigureById(props.id)).toStrictEqual(newFigureData)
   })
 
-  it('выбрасывает ошибку при отрицательном периметре', async () => {
-    wrapper.vm.fields.figurePerimeter.value = -5
+  it('выполняет успешное удаление фигуры', async () => {
+    figuresStore.addFigure(props)
 
-    await expect(() => wrapper.vm.editFigure()).toThrow("Perimeter can't be negative or null")
+    await wrapper.vm.deleteFigure()
 
-    expect(wrapper.vm.errors.figurePerimeter.value).toBe(true)
-  })
-
-  it('проверяет инициализацию глобальных состояний', () => {
-    expect(figuresStore.getFigures).toEqual([])
-    expect(printersStore.getPrinters).toEqual([])
-  })
-
-  it('выбрасывает ошибку, если не переданы обязательные свойства', () => {
-    expect(() => {
-      props = { id: '52' }
-    }).toThrow()
+    expect(figuresStore.getFigureById(props.id)).toBeUndefined()
   })
 })
