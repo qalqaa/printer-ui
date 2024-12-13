@@ -66,4 +66,10 @@ onUnmounted(() => {
   backdrop-filter: blur(10px) brightness(50%);
   animation: 0.3s ease-in-out fade-in;
 }
+
+@media (prefers-color-scheme: light) {
+  .dialog-card {
+    backdrop-filter: blur(10px), brightness(100%);
+  }
+}
 </style>

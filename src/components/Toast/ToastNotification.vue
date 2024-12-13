@@ -38,21 +38,6 @@ defineExpose({ addToast })
 </script>
 
 <style scoped>
-@keyframes toast {
-  0% {
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
 .toast-container {
   z-index: 9999;
   position: fixed;
@@ -64,8 +49,8 @@ defineExpose({ addToast })
 }
 
 .toast {
-  animation: toast 5s ease-in-out;
-  opacity: 0;
+  /* animation: toast 5s ease-in-out;
+  opacity: 0; */
   display: flex;
   flex-direction: column;
   padding: 16px 20px;
@@ -99,5 +84,16 @@ defineExpose({ addToast })
 
 .toast:hover {
   transform: translateY(-5px);
+}
+
+@media (prefers-color-scheme: light) {
+  .toast {
+    backdrop-filter: blur(10px);
+  }
+
+  .toast--warning {
+    color: #d88c11;
+    border: 1px solid #d88c11;
+  }
 }
 </style>
