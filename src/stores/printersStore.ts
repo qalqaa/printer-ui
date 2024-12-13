@@ -1,38 +1,47 @@
-import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
+import type {
+  IPrintersActions,
+  IPrintersGetters,
+  IPrintersState,
+} from '@/model/store-interfaces/printersStore'
 import { defineStore } from 'pinia'
 
-export const usePrintersStore = defineStore('printersStore', {
-  state: () => ({
-    printers: [] as IPrinter[],
+export const usePrintersStore = defineStore<
+  'printersStore',
+  IPrintersState,
+  IPrintersGetters,
+  IPrintersActions
+>('printersStore', {
+  state: (): IPrintersState => ({
+    printers: [],
   }),
   getters: {
-    getPrinters: (state): IPrinter[] => state.printers,
-    getPrinterById: (state) => (id: string) => state.printers.find((p) => p.id === id),
+    getPrinters: (state) => state.printers,
+    getPrinterById: (state) => (id) => state.printers.find((p) => p.id === id),
   },
   actions: {
-    addPrinter(printer: IPrinter) {
+    addPrinter(printer) {
       this.printers.push(printer)
     },
-    addArrayPrinters(printers: IPrinter[]) {
+    addArrayPrinters(printers) {
       this.printers.push(...printers)
     },
-    deletePrinter(id: string) {
+    deletePrinter(id) {
       this.printers = this.printers.filter((printer) => printer.id !== id)
     },
-    updatePrinter(printer: IPrinter) {
+    updatePrinter(printer) {
       const index = this.printers.findIndex((f) => f.id === printer.id)
       if (index !== -1) {
         this.printers[index] = printer
       }
     },
-    removeCoil(id: string) {
+    removeCoil(id) {
       this.printers.forEach((printer) => {
         if (printer.coil?.id === id) {
           printer.coil = null
         }
       })
     },
-    shortenCoil(id: string, shortenLength: number) {
+    shortenCoil(id, shortenLength) {
       this.printers.forEach((printer) => {
         if (printer.id === id && printer.coil) {
           let updatedLength = printer.coil.length * 1000
@@ -41,21 +50,21 @@ export const usePrintersStore = defineStore('printersStore', {
         }
       })
     },
-    addCoil(id: string, coil: ICoil) {
+    addCoil(id, coil) {
       this.printers.forEach((printer) => {
         if (printer.id === id) {
           printer.coil = coil
         }
       })
     },
-    clearQueue(id: string) {
+    clearQueue(id) {
       this.printers.forEach((printer) => {
         if (printer.id === id) {
           printer.queue = null
         }
       })
     },
-    addToQueue(id: string, figure: IFigure) {
+    addToQueue(id, figure) {
       this.printers.forEach((printer) => {
         if (printer.id === id) {
           if (!printer.queue) printer.queue = []
@@ -63,7 +72,7 @@ export const usePrintersStore = defineStore('printersStore', {
         }
       })
     },
-    removeFromQueue(id: string, figureID: string) {
+    removeFromQueue(id, figureID) {
       this.printers.forEach((printer) => {
         if (printer.id === id) {
           if (!printer.queue) return
@@ -71,7 +80,7 @@ export const usePrintersStore = defineStore('printersStore', {
         }
       })
     },
-    editInQueue(id: string, figure: IFigure) {
+    editInQueue(id, figure) {
       this.printers.forEach((printer) => {
         if (printer.id === id) {
           if (!printer.queue) return
