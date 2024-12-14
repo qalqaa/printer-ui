@@ -4,7 +4,7 @@ import CoilCard from '../card/CoilCard.vue'
 defineProps<{ items: ICoil[] }>()
 </script>
 <template>
-  <ul class="list gap-3 px-3">
+  <ul class="list gap-3">
     <CoilCard
       v-for="item in items"
       :key="item.id"

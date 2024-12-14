@@ -16,10 +16,6 @@ const confirmModeHandle = () => {
   isConfirmMode.value = !isConfirmMode.value
 }
 
-onMounted(() => {
-  loading.value = false
-})
-
 const deleteAllCompletedFigures = () => {
   toastInstance.addToast('All completed figures deleted!', 'warning')
   for (const item of figuresStore.getCompletedFigures) {
@@ -27,22 +23,26 @@ const deleteAllCompletedFigures = () => {
   }
   figuresStore.deleteAllCompletedFigures()
 }
+
+onMounted(() => {
+  loading.value = false
+})
 </script>
 
 <template>
-  <DefaultView title="Completed Figures" :otherHandle="confirmModeHandle" :loading="loading">
+  <DefaultView title="Completed Figures" :otherHandle="confirmModeHandle" :loading>
     <template #list>
       <FigureList
         v-if="figuresStore.getCompletedFigures.length !== 0"
         :items="figuresStore.getCompletedFigures"
       />
-      <p v-else>No completed figures found</p>
+      <p v-else>No completed figures found 😒</p>
     </template>
   </DefaultView>
   <DialogWindow
     :isOpen="isConfirmMode"
     @close="confirmModeHandle"
-    @confirm-action="deleteAllCompletedFigures"
+    :onConfirmAction="deleteAllCompletedFigures"
   >
     <template #content>
       <p class="text-xl">Are you sure you want to delete all completed figures?</p>

@@ -5,7 +5,7 @@ defineProps<{ items: IPrinter[] }>()
 </script>
 
 <template>
-  <ul class="list gap-3 px-3">
+  <ul class="list gap-3">
     <PrinterCard
       v-for="item in items"
       :key="item.id"

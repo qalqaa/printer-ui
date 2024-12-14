@@ -6,7 +6,7 @@ defineProps<{ items: IFigure[] }>()
 </script>
 
 <template>
-  <ul class="list gap-3 px-3">
+  <ul class="list gap-3">
     <FigureCard
       v-for="item in items"
       :key="item.id"

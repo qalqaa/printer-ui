@@ -8,7 +8,7 @@ import { CustomError } from '@/model/error/customError'
 import type { IColor, IFigure, IPrinter } from '@/model/interfaces'
 import { useFiguresStore } from '@/stores/figuresStore'
 import { usePrintersStore } from '@/stores/printersStore'
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 
 const props = defineProps<IFigure & { printerProps?: IPrinter } & { isPrinting?: boolean }>()
 
