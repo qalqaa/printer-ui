@@ -177,7 +177,6 @@ const print = (): void => {
 
     if (state.progress < 100 && props.coil) {
       state.progress++
-      console.log(filamentPerTick)
       printersStore.shortenCoil(props.id, filamentPerTick)
     } else {
       if (!props.coil || !props.queue || props.queue.length === 0) {
