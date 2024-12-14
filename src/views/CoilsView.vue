@@ -3,6 +3,7 @@ import CoilList from '@/components/Coil/list/CoilList.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import { useFieldValidation } from '@/composables/useFieldValidation'
 import { useIds } from '@/composables/useIds'
+import { useModeSwitcher } from '@/composables/useModeSwitcher'
 import { coilsService } from '@/data/api/api'
 import { colorsLib } from '@/data/static'
 import { toastInstance } from '@/main'
@@ -13,11 +14,8 @@ import { onMounted, ref } from 'vue'
 import DefaultView from './DefaultView.vue'
 
 const coilsStore = useCoilsStore()
-
 const loading = ref(true)
-const isCreatingModeTrue = ref(false)
-
-const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue.value)
+const { isModeActive, toggleMode } = useModeSwitcher()
 
 const { fields, errors, validateFields } = useFieldValidation(
   {
@@ -34,8 +32,8 @@ const { fields, errors, validateFields } = useFieldValidation(
 
 const createCoil = async () => {
   if (fields.coilLength.value <= 0) {
-    isCreatingModeTrue.value = false
     errors.coilLength.value = true
+    toggleMode('create')
     throw new CustomError("Length can't be negative or null")
   }
   if (validateFields()) {
@@ -50,7 +48,7 @@ const createCoil = async () => {
     coilsService.postData(createdCoil)
     toastInstance.addToast('Coil created!', 'success')
   } else {
-    isCreatingModeTrue.value = false
+    toggleMode('create')
     throw new CustomError('Fill all required fields')
   }
 }
@@ -60,15 +58,15 @@ onMounted(() => {
 })
 </script>
 <template>
-  <DefaultView title="Coils" :loading :create-handle="creatingModeHandle">
+  <DefaultView title="Coils" :loading :create-handle="() => toggleMode('create')">
     <template #list>
       <CoilList v-if="coilsStore.getCoils.length !== 0" :items="coilsStore.getCoils" />
       <p v-else>No coils found 😢</p>
     </template>
     <template #dialog>
       <DialogWindow
-        :isOpen="isCreatingModeTrue"
-        @close="creatingModeHandle"
+        :isOpen="isModeActive('create')"
+        @close="toggleMode('create')"
         @confirmAction="createCoil"
       >
         <template #content>

@@ -2,39 +2,44 @@
 import CoilCard from '@/components/Coil/card/CoilCard.vue'
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import FigureCard from '@/components/Figure/card/FigureCard.vue'
+import ArrowSvg from '@/components/Svg/ArrowSvg.vue'
+import PenSvg from '@/components/Svg/PenSvg.vue'
+import TrashSvg from '@/components/Svg/TrashSvg.vue'
+import { useErrorHandling } from '@/composables/useErrorHandling'
 import { useFieldValidation } from '@/composables/useFieldValidation'
+import { useModeSwitcher } from '@/composables/useModeSwitcher'
 import { useSimulateErrors } from '@/composables/useSimulateErrors'
 import { coilsService, figuresService, printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
-import type { ICoil, IFigure, IPrinter } from '@/model/interfaces'
+import type { IPrinter } from '@/model/interfaces'
+import type { IPrinterCardState } from '@/model/states/printerCard'
 import { useCoilsStore } from '@/stores/coilsStore'
 import { useFiguresStore } from '@/stores/figuresStore'
 import { usePrintersStore } from '@/stores/printersStore'
-import { ref } from 'vue'
+import { reactive } from 'vue'
 import ProgressBar from '../ProgressBar/ProgressBar.vue'
 
 const props = defineProps<IPrinter>()
-
-const isPrinting = ref(false)
-
-console.log()
 
 const printersStore = usePrintersStore()
 const coilsStore = useCoilsStore()
 const figuresStore = useFiguresStore()
 
+const state = reactive<IPrinterCardState>({
+  isPrinting: false,
+  progress: 0,
+  isQueueCollapsed: true,
+  isCoilCollapsed: true,
+  selectedCoil: 'placeholder',
+  selectedFigure: 'placeholder',
+})
+
 const coilsData = coilsStore.getCoils
 
-// const incompleteFigures = computed(() => {
-//   return figuresData.value.filter((figure) => !figure.isCompleted)
-// })
-
-const isRefillMode = ref(false)
-const isQueueMode = ref(false)
-const isEditingMode = ref(false)
-const selectedCoil = ref<ICoil | 'placeholder'>('placeholder')
-const selectedFigure = ref<IFigure | 'placeholder'>('placeholder')
+const { toggleMode, isModeActive } = useModeSwitcher()
+const modes = ['refill', 'queue', 'edit']
+const { throwIf, throwCustomError } = useErrorHandling()
 
 const { fields, errors, validateFields } = useFieldValidation(
   {
@@ -49,29 +54,62 @@ const { fields, errors, validateFields } = useFieldValidation(
   },
 )
 
-const queueHandle = () => {
-  // figuresData.value = figuresStore.getBlueprints
-  if (figuresStore.getBlueprints.length === 0 && !isQueueMode.value) {
-    throw new CustomError('No figures, create at least one in figures tab')
-  }
-  isQueueMode.value = !isQueueMode.value
+const refillHandle = () => {
+  throwIf(coilsData.length === 0, 'No coils, create at least one in coils tab')
+  toggleMode(modes[0])
 }
 
-const refillHandle = () => {
-  if (coilsData.length === 0) {
-    throw new CustomError('No coils, create at least one in coils tab')
-  }
-  isRefillMode.value = !isRefillMode.value
+const queueHandle = () => {
+  throwIf(
+    figuresStore.getBlueprints.length === 0 && !isModeActive(modes[1]),
+    'No figures, create at least one in figures tab',
+  )
+  toggleMode(modes[1])
 }
 
 const editHandle = () => {
-  isEditingMode.value = !isEditingMode.value
+  toggleMode(modes[2])
+}
+
+const refill = () => {
+  throwIf(state.isPrinting, 'Cannot remove coil while printing')
+  throwIf(props.coil !== null, 'Coil is already installed')
+  if (state.selectedCoil !== 'placeholder') {
+    printersStore.addCoil(props.id, state.selectedCoil)
+    coilsStore.deleteCoil(state.selectedCoil.id)
+    printersService.updateData(props.id, { ...props, coil: state.selectedCoil })
+    coilsService.deleteData(state.selectedCoil.id)
+    toastInstance.addToast('Coil refilled!', 'success')
+    return
+  }
+  throwCustomError('Choose a coil!')
+}
+
+const addToQueue = () => {
+  if (state.selectedFigure !== 'placeholder') {
+    if (!props.queue) {
+      printersService.updateData(props.id, { ...props, queue: [state.selectedFigure] })
+    } else {
+      printersService.updateData(props.id, {
+        ...props,
+        queue: [...props.queue, state.selectedFigure],
+      })
+    }
+    printersStore.addToQueue(props.id, state.selectedFigure)
+
+    toastInstance.addToast(`${state.selectedFigure.name} added to queue!`, 'success')
+    figuresStore.deleteFigure(state.selectedFigure.id)
+    figuresService.deleteData(state.selectedFigure.id)
+    state.selectedFigure = 'placeholder'
+    return
+  }
+  throwCustomError('Choose a figure!')
 }
 
 const editPrinter = () => {
   if (fields.printerSpeed.value <= 0) {
     errors.printerSpeed.value = true
-    throw new CustomError("Speed can't be negative or null")
+    throwCustomError("Speed can't be negative or null")
   }
   if (validateFields()) {
     const editedPrinter: IPrinter = {
@@ -84,50 +122,9 @@ const editPrinter = () => {
     printersService.updateData(props.id, editedPrinter)
     toastInstance.addToast('Printer edited!', 'success')
   } else {
-    throw new CustomError('Invalid fields')
+    throwCustomError('Invalid fields')
   }
 }
-
-const addToQueue = () => {
-  if (selectedFigure.value !== 'placeholder') {
-    if (!props.queue) {
-      printersService.updateData(props.id, { ...props, queue: [selectedFigure.value] })
-    } else {
-      printersService.updateData(props.id, {
-        ...props,
-        queue: [...props.queue, selectedFigure.value],
-      })
-    }
-    printersStore.addToQueue(props.id, selectedFigure.value)
-
-    toastInstance.addToast(`${selectedFigure.value.name} added to queue!`, 'success')
-    figuresStore.deleteFigure(selectedFigure.value.id)
-    figuresService.deleteData(selectedFigure.value.id)
-    selectedFigure.value = 'placeholder'
-    return
-  }
-  throw new CustomError('Choose a figure!')
-}
-
-const refill = () => {
-  if (isPrinting.value) {
-    throw new CustomError('Cannot remove coil while printing')
-  }
-  if (props.coil) {
-    throw new CustomError('Coil is already installed')
-  }
-  if (selectedCoil.value !== 'placeholder') {
-    printersStore.addCoil(props.id, selectedCoil.value)
-    coilsStore.deleteCoil(selectedCoil.value.id)
-    printersService.updateData(props.id, { ...props, coil: selectedCoil.value })
-    coilsService.deleteData(selectedCoil.value.id)
-    toastInstance.addToast('Coil refilled!', 'success')
-    return
-  }
-  throw new CustomError('Choose a coil!')
-}
-
-const progress = ref(0)
 
 const print = (): void => {
   if (!props.queue || props.queue.length === 0) {
@@ -138,23 +135,23 @@ const print = (): void => {
     throw new CustomError('No coil inside printer, first refill it')
   }
 
-  isPrinting.value = true
+  state.isPrinting = true
   const currentFigure = props.queue[0]
   const perimeterPrintedFigure = currentFigure.perimeter
   const onePercentTime = (perimeterPrintedFigure * 10000) / props.speed
   const filamentPerTick = Math.round((perimeterPrintedFigure / 100) * 1000)
 
   if (!props.coil || props.coil.length < perimeterPrintedFigure) {
-    isPrinting.value = false
+    state.isPrinting = false
     throw new CustomError('Coil is too short')
   }
 
   const timer = setInterval(() => {
-    const error = useSimulateErrors(progress.value)
+    const error = useSimulateErrors(state.progress)
 
     if (error) {
       clearInterval(timer)
-      isPrinting.value = false
+      state.isPrinting = false
 
       switch (error.type) {
         case 'thread':
@@ -162,7 +159,7 @@ const print = (): void => {
           return
 
         case 'nozzle':
-          progress.value = 0
+          state.progress = 0
           toastInstance.addToast(error.message, 'error')
           if (!props.queue) return
           printersStore.removeFromQueue(props.id, props.queue[0].id)
@@ -178,8 +175,8 @@ const print = (): void => {
       }
     }
 
-    if (progress.value < 100 && props.coil) {
-      progress.value++
+    if (state.progress < 100 && props.coil) {
+      state.progress++
       console.log(filamentPerTick)
       printersStore.shortenCoil(props.id, filamentPerTick)
     } else {
@@ -203,13 +200,13 @@ const print = (): void => {
         })
         .then(() => {
           clearInterval(timer)
-          isPrinting.value = false
+          state.isPrinting = false
 
           if (props.queue!.length > 0) {
-            progress.value = 0
+            state.progress = 0
             print()
           }
-          progress.value = 0
+          state.progress = 0
         })
     }
   }, onePercentTime)
@@ -220,10 +217,6 @@ const deletePrinter = () => {
   printersService.deleteData(props.id)
   printersStore.deletePrinter(props.id)
 }
-
-const isQueueCollapsed = ref(true)
-
-const isCoilCollapsed = ref(true)
 </script>
 
 <template>
@@ -231,101 +224,54 @@ const isCoilCollapsed = ref(true)
     class="flex flex-column shadow-5 p-4 border-round-lg bg-color-soft gap-2 relative justify-content-between"
   >
     <button
-      :class="{ disabled: isPrinting }"
+      :class="{ disabled: state.isPrinting }"
       @click="deletePrinter"
       class="absolute pt-2 top-0 right-0 m-2"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        fill="currentColor"
-        class="bi bi-trash"
-        viewBox="0 0 16 16"
-      >
-        <path
-          d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"
-        />
-        <path
-          d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
-        />
-      </svg>
-      <!-- Да, да знаю, что нельзя, но пощадите пожалуйста, пол второго ночи -->
+      <TrashSvg />
     </button>
     <button
-      :class="{ disabled: isPrinting }"
+      :class="{ disabled: state.isPrinting }"
       @click="editHandle"
       class="absolute pt-2 top-0 right-0 m-2 mr-6"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        fill="currentColor"
-        class="bi bi-pen-fill"
-        viewBox="0 0 16 16"
-      >
-        <path
-          d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001"
-        />
-      </svg>
+      <PenSvg />
     </button>
     <div class="flex flex-column gap-2">
       <img class="w-7 mx-auto" :src="imgUrl" alt="printer_image" />
       <h2>{{ name }} from {{ brand }}</h2>
       <div class="flex flex-column">
         <div class="flex" v-if="coil">
-          <div class="flex collapse-hitbox" @click="isCoilCollapsed = !isCoilCollapsed">
+          <div class="flex collapse-hitbox" @click="state.isCoilCollapsed = !state.isCoilCollapsed">
             <h2>Coil</h2>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-caret-down-fill rotate-btn"
-              :class="{ rotate: isCoilCollapsed }"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
-              />
-            </svg>
+            <ArrowSvg :is-collapsed="state.isCoilCollapsed" />
           </div>
-          <span class="pt-2" v-if="isCoilCollapsed">({{ coil.length }}m)</span>
+          <span class="pt-2" v-if="state.isCoilCollapsed">({{ coil.length }}m)</span>
         </div>
         <button v-else @click="refillHandle" class="w-full">Add coil</button>
-        <ul v-if="!isCoilCollapsed && coil" class="flex flex-column py-3 border-round-lg">
+        <ul v-if="!state.isCoilCollapsed && coil" class="flex flex-column py-3 border-round-lg">
           <CoilCard
             :printer-props="props"
             :id="coil.id"
             :material="coil.material"
             :color="coil.color"
             :length="coil.length"
-            :is-printing="isPrinting"
+            :is-printing="state.isPrinting"
           />
         </ul>
       </div>
       <div class="flex flex-column" v-if="queue?.length">
         <div class="flex">
-          <div class="flex collapse-hitbox" @click="isQueueCollapsed = !isQueueCollapsed">
+          <div
+            class="flex collapse-hitbox"
+            @click="state.isQueueCollapsed = !state.isQueueCollapsed"
+          >
             <h2>Queue</h2>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              fill="currentColor"
-              class="bi bi-caret-down-fill rotate-btn"
-              :class="{ rotate: isQueueCollapsed }"
-              viewBox="0 0 16 16"
-            >
-              <path
-                d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
-              />
-            </svg>
+            <ArrowSvg :is-collapsed="state.isQueueCollapsed" />
           </div>
-          <span class="pt-2" v-if="isQueueCollapsed">({{ queue.length }})</span>
+          <span class="pt-2" v-if="state.isQueueCollapsed">({{ queue.length }})</span>
         </div>
-        <p v-if="isQueueCollapsed">{{ queue.map((item) => item.name).join(', ') }}</p>
+        <p v-if="state.isQueueCollapsed">{{ queue.map((item) => item.name).join(', ') }}</p>
         <ul v-else class="flex flex-column py-3 border-round-lg gap-2">
           <FigureCard
             v-for="item in props.queue"
@@ -335,35 +281,35 @@ const isCoilCollapsed = ref(true)
             :perimeter="item.perimeter"
             :is-completed="item.isCompleted"
             :printer-props="props"
-            :is-printing="isPrinting"
+            :is-printing="state.isPrinting"
           />
         </ul>
       </div>
-      <button class="w-full" :class="{ disabled: isPrinting }" @click="queueHandle">
+      <button class="w-full" :class="{ disabled: state.isPrinting }" @click="queueHandle">
         Add to queue
       </button>
     </div>
     <div class="flex flex-column">
       <h2>Info</h2>
       <p>Print Speed: {{ speed }}mm/s</p>
-      <p :class="{ 'c-accent': isPrinting }" id="print-status">
-        Print status: {{ isPrinting ? `printing... ` + progress + '%' : 'offline' }}
+      <p :class="{ 'c-accent': state.isPrinting }" id="print-status">
+        Print status: {{ state.isPrinting ? `printing... ` + state.progress + '%' : 'offline' }}
       </p>
 
-      <ProgressBar :progress="progress" class="mb-1" />
+      <ProgressBar :progress="state.progress" class="mb-1" />
       <button
-        :class="{ disabled: isPrinting }"
+        :class="{ disabled: state.isPrinting }"
         class="inverted w-full"
-        :disabled="isPrinting"
+        :disabled="state.isPrinting"
         @click="print"
       >
         Print
       </button>
     </div>
   </li>
-  <DialogWindow :isOpen="isRefillMode" @close="refillHandle" :onConfirmAction="refill">
+  <DialogWindow :isOpen="isModeActive(modes[0])" @close="refillHandle" :onConfirmAction="refill">
     <template #content>
-      <select v-model="selectedCoil" name="coil">
+      <select v-model="state.selectedCoil" name="coil">
         <option selected disabled hidden value="placeholder">Chose a coil</option>
         <option
           v-for="item in coilsData"
@@ -374,9 +320,9 @@ const isCoilCollapsed = ref(true)
       </select>
     </template>
   </DialogWindow>
-  <DialogWindow :isOpen="isQueueMode" @close="queueHandle" :onConfirmAction="addToQueue">
+  <DialogWindow :isOpen="isModeActive(modes[1])" @close="queueHandle" :onConfirmAction="addToQueue">
     <template #content>
-      <select v-model="selectedFigure" name="coil">
+      <select v-model="state.selectedFigure" name="coil">
         <option selected disabled hidden value="placeholder">Chose a figure</option>
         <option
           v-for="item in figuresStore.getBlueprints"
@@ -387,7 +333,7 @@ const isCoilCollapsed = ref(true)
       </select>
     </template>
   </DialogWindow>
-  <DialogWindow :isOpen="isEditingMode" @close="editHandle" :onConfirmAction="editPrinter">
+  <DialogWindow :isOpen="isModeActive(modes[2])" @close="editHandle" :onConfirmAction="editPrinter">
     <template #content>
       <h2>Edit a {{ name }}</h2>
       <div class="input-box">
@@ -436,12 +382,12 @@ const isCoilCollapsed = ref(true)
   cursor: pointer;
 }
 
+.rotate {
+  transform: rotate(-90deg);
+}
+
 .rotate-btn {
   transition: transform 0.3s ease-in-out;
   padding: 10px;
-}
-
-.rotate {
-  transform: rotate(-90deg);
 }
 </style>

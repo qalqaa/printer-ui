@@ -3,6 +3,7 @@ import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import PrinterList from '@/components/Printer/PrinterList/PrinterList.vue'
 import { useFieldValidation } from '@/composables/useFieldValidation'
 import { useIds } from '@/composables/useIds'
+import { useModeSwitcher } from '@/composables/useModeSwitcher'
 import { printersService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
@@ -12,11 +13,8 @@ import { onMounted, ref } from 'vue'
 import DefaultView from './DefaultView.vue'
 
 const printersStore = usePrintersStore()
-
 const loading = ref(true)
-const isCreatingModeTrue = ref(false)
-
-const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue.value)
+const { isModeActive, toggleMode } = useModeSwitcher()
 
 const { fields, errors, validateFields } = useFieldValidation(
   {
@@ -33,7 +31,7 @@ const { fields, errors, validateFields } = useFieldValidation(
 
 const createPrinter = async () => {
   if (fields.printerSpeed.value <= 0) {
-    isCreatingModeTrue.value = false
+    toggleMode('create')
     errors.printerSpeed.value = true
     throw new CustomError("Speed can't be negative or null")
   }
@@ -51,6 +49,7 @@ const createPrinter = async () => {
     printersService.postData(postedPrinter)
     toastInstance.addToast(fields.printerName.value + ' created', 'success')
   } else {
+    toggleMode('create')
     throw new CustomError('Fill all required fields')
   }
 }
@@ -60,7 +59,7 @@ onMounted(() => {
 })
 </script>
 <template>
-  <DefaultView title="Printers" :loading="loading" :create-handle="creatingModeHandle">
+  <DefaultView title="Printers" :loading="loading" :create-handle="() => toggleMode('create')">
     <template #list>
       <PrinterList
         v-if="printersStore.getPrinters.length !== 0"
@@ -70,8 +69,8 @@ onMounted(() => {
     </template>
     <template #dialog>
       <DialogWindow
-        :isOpen="isCreatingModeTrue"
-        @close="creatingModeHandle"
+        :isOpen="isModeActive('create')"
+        @close="toggleMode('create')"
         @confirmAction="createPrinter"
       >
         <template #content>

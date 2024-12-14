@@ -25,7 +25,7 @@ describe('Методы запуска печати и установки/сня�
 
     await wrapper.vm.print()
 
-    expect(wrapper.vm.isPrinting).toBe(true)
+    expect(wrapper.vm.state.isPrinting).toBe(true)
   })
 
   it('отображает прогресс печати', async () => {
@@ -110,11 +110,11 @@ describe('Методы запуска печати и установки/сня�
 
     const selectedCoil = { id: 'ix8rinu', material: 'Plastic', color: 'red', length: 2000 }
 
-    wrapper.vm.selectedCoil = selectedCoil
+    wrapper.vm.state.selectedCoil = selectedCoil
 
     await wrapper.vm.refill()
 
-    expect(wrapper.vm.selectedCoil).toEqual({
+    expect(wrapper.vm.state.selectedCoil).toEqual({
       id: 'ix8rinu',
       material: 'Plastic',
       color: 'red',
@@ -164,7 +164,7 @@ describe('Методы запуска печати и установки/сня�
       },
     })
 
-    wrapper.vm.isPrinting = true
+    wrapper.vm.state.isPrinting = true
 
     expect(() => wrapper.vm.refill()).toThrow(CustomError)
     expect(() => wrapper.vm.refill()).toThrow('Cannot remove coil while printing')

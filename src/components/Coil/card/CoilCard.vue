@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
+import PenSvg from '@/components/Svg/PenSvg.vue'
+import ReturnSvg from '@/components/Svg/ReturnSvg.vue'
+import ScissorsSvg from '@/components/Svg/ScissorsSvg.vue'
+import TrashSvg from '@/components/Svg/TrashSvg.vue'
 import { useColors } from '@/composables/useColors'
 import { useFieldValidation } from '@/composables/useFieldValidation'
 import { coilsService, printersService } from '@/data/api/api'
@@ -13,14 +17,14 @@ import { ref } from 'vue'
 
 const props = defineProps<ICoil & { printerProps?: IPrinter } & { isPrinting?: boolean }>()
 
-let colors = useColors(props.color)
-
 const coilsStore = useCoilsStore()
 const printersStore = usePrintersStore()
 
 const isCuttingMode = ref(false)
 const cutLength = ref(0)
 const isEditingMode = ref(false)
+
+let colors = useColors(props.color)
 
 const { fields, errors, validateFields } = useFieldValidation(
   {
@@ -36,6 +40,7 @@ const { fields, errors, validateFields } = useFieldValidation(
 )
 
 const editModeHandle = () => (isEditingMode.value = !isEditingMode.value)
+const cuttingModeHandle = () => (isCuttingMode.value = !isCuttingMode.value)
 
 const editCoil = () => {
   if (fields.coilLength.value <= 0) {
@@ -59,7 +64,47 @@ const editCoil = () => {
   }
 }
 
-const cuttingModeHandle = () => (isCuttingMode.value = !isCuttingMode.value)
+const cut = () => {
+  if (cutLength.value <= 0) {
+    throw new CustomError('Cut length must be bigger than 0')
+  }
+
+  if (props.printerProps) {
+    if (cutLength.value >= fields.coilLength.value) {
+      const printerWithoutCoil: IPrinter = {
+        ...props.printerProps,
+        coil: null,
+      }
+      printersStore.updatePrinter(printerWithoutCoil)
+      printersService.updateData(props.printerProps.id, printerWithoutCoil)
+      throw new CustomError('Cut length is bigger than coil length, coil removed')
+    }
+    const filteredProps = {
+      id: props.id,
+      material: props.material,
+      color: props.color,
+    }
+    const printerWithShortCoil: IPrinter = {
+      ...props.printerProps,
+      coil: { ...filteredProps, length: fields.coilLength.value - cutLength.value },
+    }
+    printersStore.updatePrinter(printerWithShortCoil)
+    printersService.updateData(props.printerProps.id, printerWithShortCoil)
+    toastInstance.addToast(`Coil is cutted`, 'success')
+    return
+  }
+  if (cutLength.value >= fields.coilLength.value) {
+    fields.coilLength.value = 0
+    coilsStore.deleteCoil(props.id)
+    coilsService.deleteData(props.id)
+    throw new CustomError('Cut length is bigger than coil length, coil removed')
+  }
+  fields.coilLength.value -= cutLength.value
+  const updatedCoil: ICoil = { ...props, length: fields.coilLength.value }
+  coilsStore.updateCoil(updatedCoil)
+  coilsService.updateData(props.id, updatedCoil)
+  toastInstance.addToast(`Coil is cutted`, 'success')
+}
 
 const deleteCoil = () => {
   if (props.printerProps) {
@@ -85,45 +130,6 @@ const deleteCoil = () => {
   coilsStore.deleteCoil(props.id)
   coilsService.deleteData(props.id)
 }
-
-const cut = () => {
-  if (cutLength.value <= 0) {
-    throw new CustomError('Cut length must be bigger than 0')
-  }
-
-  if (props.printerProps) {
-    if (cutLength.value >= fields.coilLength.value) {
-      const printerWithoutCoil: IPrinter = {
-        ...props.printerProps,
-        coil: null,
-      }
-      printersStore.updatePrinter(printerWithoutCoil)
-      printersService.updateData(props.printerProps.id, printerWithoutCoil)
-      throw new CustomError('Cut length is bigger than coil length, coil removed')
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { printerProps, length, ...filteredProps } = props
-    const printerWithShortCoil: IPrinter = {
-      ...props.printerProps,
-      coil: { ...filteredProps, length: fields.coilLength.value - cutLength.value },
-    }
-    printersStore.updatePrinter(printerWithShortCoil)
-    printersService.updateData(props.printerProps.id, printerWithShortCoil)
-    toastInstance.addToast(`Coil is cutted`, 'success')
-    return
-  }
-  if (cutLength.value >= fields.coilLength.value) {
-    fields.coilLength.value = 0
-    coilsStore.deleteCoil(props.id)
-    coilsService.deleteData(props.id)
-    throw new CustomError('Cut length is bigger than coil length, coil removed')
-  }
-  fields.coilLength.value -= cutLength.value
-  const updatedCoil: ICoil = { ...props, length: fields.coilLength.value }
-  coilsStore.updateCoil(updatedCoil)
-  coilsService.updateData(props.id, updatedCoil)
-  toastInstance.addToast(`Coil is cutted`, 'success')
-}
 </script>
 
 <template>
@@ -137,64 +143,14 @@ const cut = () => {
       <p>Length: {{ length }}m</p>
       <div :class="{ disabled: isPrinting }" class="flex flex-row gap-2">
         <button @click="cuttingModeHandle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            class="bi bi-scissors"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="M3.5 3.5c-.614-.884-.074-1.962.858-2.5L8 7.226 11.642 1c.932.538 1.472 1.616.858 2.5L8.81 8.61l1.556 2.661a2.5 2.5 0 1 1-.794.637L8 9.73l-1.572 2.177a2.5 2.5 0 1 1-.794-.637L7.19 8.61zm2.5 10a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0m7 0a1.5 1.5 0 1 0-3 0 1.5 1.5 0 0 0 3 0"
-            />
-          </svg>
+          <ScissorsSvg />
         </button>
         <button v-if="!props.printerProps" @click="editModeHandle">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            class="bi bi-pen-fill"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001"
-            />
-          </svg>
+          <PenSvg />
         </button>
         <button class="pt-2" @click="deleteCoil">
-          <svg
-            v-if="!props.printerProps"
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            class="bi bi-trash"
-            viewBox="0 0 16 16"
-          >
-            <path
-              d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"
-            />
-            <path
-              d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"
-            />
-          </svg>
-          <svg
-            v-else
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            class="bi bi-arrow-return-right"
-            viewBox="0 0 16 16"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"
-            />
-          </svg>
+          <TrashSvg v-if="!props.printerProps" />
+          <ReturnSvg v-else />
         </button>
       </div>
     </div>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import FigureList from '@/components/Figure/list/FigureList.vue'
+import { useModeSwitcher } from '@/composables/useModeSwitcher'
 import { figuresService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { useFiguresStore } from '@/stores/figuresStore'
@@ -11,10 +12,7 @@ const figuresStore = useFiguresStore()
 
 const loading = ref(true)
 
-const isConfirmMode = ref(false)
-const confirmModeHandle = () => {
-  isConfirmMode.value = !isConfirmMode.value
-}
+const { isModeActive, toggleMode } = useModeSwitcher()
 
 const deleteAllCompletedFigures = () => {
   toastInstance.addToast('All completed figures deleted!', 'warning')
@@ -30,7 +28,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <DefaultView title="Completed Figures" :otherHandle="confirmModeHandle" :loading>
+  <DefaultView title="Completed Figures" :otherHandle="() => toggleMode('confirm')" :loading>
     <template #list>
       <FigureList
         v-if="figuresStore.getCompletedFigures.length !== 0"
@@ -40,8 +38,8 @@ onMounted(() => {
     </template>
   </DefaultView>
   <DialogWindow
-    :isOpen="isConfirmMode"
-    @close="confirmModeHandle"
+    :isOpen="isModeActive('confirm')"
+    @close="toggleMode('confirm')"
     :onConfirmAction="deleteAllCompletedFigures"
   >
     <template #content>

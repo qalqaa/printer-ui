@@ -3,6 +3,7 @@ import DialogWindow from '@/components/DialogWindow/DialogWindow.vue'
 import FigureList from '@/components/Figure/list/FigureList.vue'
 import { useFieldValidation } from '@/composables/useFieldValidation'
 import { useIds } from '@/composables/useIds'
+import { useModeSwitcher } from '@/composables/useModeSwitcher'
 import { figuresService } from '@/data/api/api'
 import { toastInstance } from '@/main'
 import { CustomError } from '@/model/error/customError'
@@ -17,9 +18,7 @@ const figuresData = computed(() => {
 })
 
 const loading = ref(true)
-const isCreatingModeTrue = ref(false)
-
-const creatingModeHandle = () => (isCreatingModeTrue.value = !isCreatingModeTrue.value)
+const { isModeActive, toggleMode } = useModeSwitcher()
 
 const { fields, errors, validateFields } = useFieldValidation(
   {
@@ -34,7 +33,7 @@ const { fields, errors, validateFields } = useFieldValidation(
 
 const createFigure = async () => {
   if (fields.figurePerimeter.value <= 0) {
-    isCreatingModeTrue.value = false
+    toggleMode('create')
     errors.figurePerimeter.value = true
     throw new CustomError("Perimeter can't be negative or null")
   }
@@ -50,7 +49,7 @@ const createFigure = async () => {
     figuresService.postData(createdFigure)
     toastInstance.addToast(fields.figureName.value + ' created!', 'success')
   } else {
-    isCreatingModeTrue.value = false
+    toggleMode('create')
     throw new CustomError('Fill all required fields')
   }
 }
@@ -60,7 +59,7 @@ onMounted(() => {
 })
 </script>
 <template>
-  <DefaultView title="Figures" :loading="loading" :create-handle="creatingModeHandle">
+  <DefaultView title="Figures" :loading="loading" :create-handle="() => toggleMode('create')">
     <template #list>
       <FigureList
         id="FigureList"
@@ -71,8 +70,8 @@ onMounted(() => {
     </template>
     <template #dialog>
       <DialogWindow
-        :isOpen="isCreatingModeTrue"
-        @close="creatingModeHandle"
+        :isOpen="isModeActive('create')"
+        @close="toggleMode('create')"
         @confirmAction="createFigure"
       >
         <template #content>
