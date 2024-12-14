@@ -6,12 +6,20 @@
       "brand": "Apple",
       "speed": 100,
       "coil": {
-        "id": "xtprzup",
-        "material": "PLA",
-        "color": "red",
-        "length": 997
+        "id": "jypspo9",
+        "material": "ABS",
+        "color": "orange",
+        "length": 1199
       },
-      "queue": [],
+      "queue": [
+        {
+          "id": "2x7othm",
+          "isCompleted": false,
+          "name": "2132",
+          "perimeter": 2,
+          "imgUrl": "figure.png"
+        }
+      ],
       "imgUrl": "Iprinter.png"
     },
     {
@@ -41,11 +49,10 @@
       "length": 495.9
     },
     {
-      "id": "jypspo9",
-      "material": "ABS",
-      "color": "orange",
-      "length": 1199,
-      "isPrinting": false
+      "id": "xtprzup",
+      "material": "PLA",
+      "color": "red",
+      "length": 997
     }
   ],
   "figures": []

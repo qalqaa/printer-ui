@@ -73,7 +73,7 @@ const router = useRouter()
 <template>
   <header>
     <nav class="flex gap-2 justify-content-between px-7 py-3 bg-color-soft shadow-5">
-      <RouterLink to="/" class="flex flex-column align-items-center">
+      <RouterLink to="/" class="flex flex-column align-items-center logo">
         <img class="w-5" src="/favicon.ico" alt="Logo" />
         <p class="c-accent font-bold">qalqaPrint</p>
       </RouterLink>
@@ -92,3 +92,9 @@ const router = useRouter()
     <p>© qalqa - Бастун Андрей Артемович 231-323</p>
   </footer>
 </template>
+
+<style>
+.logo {
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.25));
+}
+</style>

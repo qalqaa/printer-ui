@@ -1,4 +1,6 @@
 @import '../../../node_modules/qalqa-stylesheet/main.css';
+@import '/node_modules/normalize.css/normalize.css';
+@import '/node_modules/primeflex/primeflex.css';
 
 .list {
   display: grid;

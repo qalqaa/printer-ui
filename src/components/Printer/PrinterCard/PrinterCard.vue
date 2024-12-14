@@ -224,7 +224,7 @@ const deletePrinter = () => {
 
 <template>
   <li
-    class="flex flex-column shadow-5 p-4 border-round-lg bg-color-soft gap-2 justify-content-between relative"
+    class="flex flex-column shadow-5 p-4 border-round-lg bg-color-soft gap-2 relative justify-content-between"
   >
     <button
       :class="{ disabled: isPrinting }"
@@ -269,12 +269,9 @@ const deletePrinter = () => {
     <div class="flex flex-column gap-2">
       <img class="w-7 mx-auto" :src="imgUrl" alt="printer_image" />
       <h2>{{ name }} from {{ brand }}</h2>
-
-      <div class="flex" v-if="!coil">
-        <button @click="refillHandle" class="inverted w-full">Add coil</button>
-      </div>
-      <ul v-else class="flex flex-column px-2 py-3 border-round-lg">
-        <h3 class="c-accent">Coil</h3>
+      <button v-if="!coil" @click="refillHandle" class="w-full">Add coil</button>
+      <ul v-else class="flex flex-column py-3 border-round-lg">
+        <h2>Coil</h2>
         <CoilCard
           :printer-props="props"
           :id="coil.id"
@@ -285,8 +282,8 @@ const deletePrinter = () => {
         />
       </ul>
 
-      <ul class="flex flex-column px-2 py-3 border-round-lg gap-2" v-if="queue?.length">
-        <h3 class="c-accent">Queue</h3>
+      <ul class="flex flex-column py-3 border-round-lg gap-2" v-if="queue?.length">
+        <h2>Queue</h2>
         <FigureCard
           v-for="item in props.queue"
           :key="item.id"
@@ -299,12 +296,23 @@ const deletePrinter = () => {
         />
       </ul>
       <button :class="{ disabled: isPrinting }" @click="queueHandle">Add to queue</button>
+    </div>
+    <div class="flex flex-column">
+      <h2>Info</h2>
       <p>Print Speed: {{ speed }}mm/s</p>
-      <p id="print-status">
-        "Print status: {{ isPrinting ? `printing... ` + progress + '%' : 'offline' }}
+      <p :class="{ 'c-accent': isPrinting }" id="print-status">
+        Print status: {{ isPrinting ? `printing... ` + progress + '%' : 'offline' }}
       </p>
+
       <ProgressBar :progress="progress" />
-      <button :class="{ disabled: isPrinting }" :disabled="isPrinting" @click="print">Print</button>
+      <button
+        :class="{ disabled: isPrinting }"
+        class="inverted w-full"
+        :disabled="isPrinting"
+        @click="print"
+      >
+        Print
+      </button>
     </div>
   </li>
   <DialogWindow :isOpen="isRefillMode" @close="refillHandle" :onConfirmAction="refill">
