@@ -99,7 +99,7 @@ const toggleBurgerMenu = () => {
       </button>
     </nav>
   </header>
-  <RouterView class="router" />
+  <RouterView />
   <footer
     class="fixed bottom-0 p-2 w-full flex justify-content-center align-items-center bg-color-soft"
   >
@@ -176,7 +176,7 @@ const toggleBurgerMenu = () => {
     width: 100%;
   }
 
-  .router {
+  main {
     padding-top: 100px !important;
     padding-left: 0px !important;
     padding-right: 0px !important;

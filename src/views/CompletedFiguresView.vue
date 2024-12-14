@@ -35,15 +35,16 @@ onMounted(() => {
         :items="figuresStore.getCompletedFigures"
       />
       <p v-else>No completed figures found 😒</p>
+
+      <DialogWindow
+        :isOpen="isModeActive('confirm')"
+        @close="toggleMode('confirm')"
+        :onConfirmAction="deleteAllCompletedFigures"
+      >
+        <template #content>
+          <p class="text-xl">Are you sure you want to delete all completed figures?</p>
+        </template>
+      </DialogWindow>
     </template>
   </DefaultView>
-  <DialogWindow
-    :isOpen="isModeActive('confirm')"
-    @close="toggleMode('confirm')"
-    :onConfirmAction="deleteAllCompletedFigures"
-  >
-    <template #content>
-      <p class="text-xl">Are you sure you want to delete all completed figures?</p>
-    </template>
-  </DialogWindow>
 </template>
