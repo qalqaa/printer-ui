@@ -42,7 +42,9 @@ onMounted(() => {
         :onConfirmAction="deleteAllCompletedFigures"
       >
         <template #content>
-          <p class="text-xl">Are you sure you want to delete all completed figures?</p>
+          <p class="text-xl">
+            Are you sure you want to delete <span class="c-accent">ALL</span> completed figures?
+          </p>
         </template>
       </DialogWindow>
     </template>

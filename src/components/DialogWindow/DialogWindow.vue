@@ -38,10 +38,10 @@ onUnmounted(() => {
   <div
     v-if="isOpen"
     @click="handleOverlayClick"
-    class="w-screen h-screen left-0 top-0 fixed flex items-center justify-content-center align-items-center dialog-card"
+    class="w-screen h-screen left-0 top-0 fixed flex items-center justify-content-center align-items-center dialog-window"
   >
     <div
-      class="bg-color flex flex-column gap-2 p-4 w-3 pt-5 border-round-lg t relative"
+      class="bg-color flex flex-column gap-2 p-4 pt-5 border-round-lg t relative dialog-card"
       ref="modal"
     >
       <button @click="handleClose" class="inverted absolute top-0 right-0 m-2">x</button>
@@ -61,15 +61,22 @@ onUnmounted(() => {
   }
 }
 
-.dialog-card {
+.dialog-window {
   z-index: 9998;
   backdrop-filter: blur(10px) brightness(50%);
   animation: 0.3s ease-in-out fade-in;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .dialog-card {
+    width: 83%;
+  }
 }
 
 @media (prefers-color-scheme: light) {
-  .dialog-card {
-    backdrop-filter: blur(10px), brightness(100%);
+  .dialog-window {
+    backdrop-filter: blur(10px) brightness(95%);
   }
 }
 </style>

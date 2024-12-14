@@ -63,17 +63,22 @@ const render = async () => {
   }
 }
 
-onMounted(() => {
-  render()
-})
-
 const router = useRouter()
+
+const navigate = (path: string) => {
+  router.push(path)
+  isBurgerMenuOpen.value = false
+}
 
 const isBurgerMenuOpen = ref(false)
 
 const toggleBurgerMenu = () => {
   isBurgerMenuOpen.value = !isBurgerMenuOpen.value
 }
+
+onMounted(() => {
+  render()
+})
 </script>
 
 <template>
@@ -87,10 +92,26 @@ const toggleBurgerMenu = () => {
         class="align-items-center gap-2 navigation-bar"
         :class="{ 'navigation-bar--open': isBurgerMenuOpen }"
       >
-        <button class="nav-btn" @click="router.push('/')">Printers</button>
-        <button class="nav-btn" @click="router.push('/coils')">Coils</button>
-        <button class="nav-btn" @click="router.push('/figure-library')">Figure Library</button>
-        <button class="nav-btn" @click="router.push('/done-figures')">Done Figures</button>
+        <button class="nav-btn" :class="{ inverted: isBurgerMenuOpen }" @click="navigate('/')">
+          Printers
+        </button>
+        <button class="nav-btn" :class="{ inverted: isBurgerMenuOpen }" @click="navigate('/coils')">
+          Coils
+        </button>
+        <button
+          class="nav-btn"
+          :class="{ inverted: isBurgerMenuOpen }"
+          @click="navigate('/figure-library')"
+        >
+          Figure Library
+        </button>
+        <button
+          class="nav-btn"
+          :class="{ inverted: isBurgerMenuOpen }"
+          @click="navigate('/done-figures')"
+        >
+          Done Figures
+        </button>
       </div>
       <button class="burger-menu" @click="toggleBurgerMenu">
         <span :class="{ 'burger-menu__line--open': isBurgerMenuOpen }"></span>
@@ -108,11 +129,21 @@ const toggleBurgerMenu = () => {
 </template>
 
 <style scoped>
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .logo {
   filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.25));
 }
 
 .navigation-bar {
+  transition: all 0.3s ease-in-out;
   display: flex;
 }
 
@@ -131,6 +162,11 @@ const toggleBurgerMenu = () => {
   transition: all 0.3s ease-in-out;
 }
 
+.burger-menu:focus > span,
+.burger-menu:hover > span {
+  background-color: var(--accent-hl);
+}
+
 .burger-menu__line--open:nth-child(1) {
   transform: rotate(45deg) translate(6px, 5px);
 }
@@ -144,6 +180,7 @@ const toggleBurgerMenu = () => {
 }
 
 .navigation-bar--open {
+  animation: fade-in 0.3s ease-in-out;
   display: flex !important;
   flex-direction: column;
   position: absolute;
@@ -188,6 +225,12 @@ const toggleBurgerMenu = () => {
 
   .burger-menu {
     display: flex;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .navigation-bar--open {
+    backdrop-filter: blur(10px) brightness(95%);
   }
 }
 </style>
