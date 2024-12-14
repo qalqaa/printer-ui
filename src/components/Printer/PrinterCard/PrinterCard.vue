@@ -220,6 +220,10 @@ const deletePrinter = () => {
   printersService.deleteData(props.id)
   printersStore.deletePrinter(props.id)
 }
+
+const isQueueCollapsed = ref(true)
+
+const isCoilCollapsed = ref(true)
 </script>
 
 <template>
@@ -269,33 +273,75 @@ const deletePrinter = () => {
     <div class="flex flex-column gap-2">
       <img class="w-7 mx-auto" :src="imgUrl" alt="printer_image" />
       <h2>{{ name }} from {{ brand }}</h2>
-      <button v-if="!coil" @click="refillHandle" class="w-full">Add coil</button>
-      <ul v-else class="flex flex-column py-3 border-round-lg">
-        <h2>Coil</h2>
-        <CoilCard
-          :printer-props="props"
-          :id="coil.id"
-          :material="coil.material"
-          :color="coil.color"
-          :length="coil.length"
-          :is-printing="isPrinting"
-        />
-      </ul>
-
-      <ul class="flex flex-column py-3 border-round-lg gap-2" v-if="queue?.length">
-        <h2>Queue</h2>
-        <FigureCard
-          v-for="item in props.queue"
-          :key="item.id"
-          :id="item.id"
-          :name="item.name"
-          :perimeter="item.perimeter"
-          :is-completed="item.isCompleted"
-          :printer-props="props"
-          :is-printing="isPrinting"
-        />
-      </ul>
-      <button :class="{ disabled: isPrinting }" @click="queueHandle">Add to queue</button>
+      <div class="flex flex-column">
+        <div class="flex" v-if="coil">
+          <div class="flex collapse-hitbox" @click="isCoilCollapsed = !isCoilCollapsed">
+            <h2>Coil</h2>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-caret-down-fill rotate-btn"
+              :class="{ rotate: isCoilCollapsed }"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
+              />
+            </svg>
+          </div>
+          <span class="pt-2" v-if="isCoilCollapsed">({{ coil.length }}m)</span>
+        </div>
+        <button v-else @click="refillHandle" class="w-full">Add coil</button>
+        <ul v-if="!isCoilCollapsed && coil" class="flex flex-column py-3 border-round-lg">
+          <CoilCard
+            :printer-props="props"
+            :id="coil.id"
+            :material="coil.material"
+            :color="coil.color"
+            :length="coil.length"
+            :is-printing="isPrinting"
+          />
+        </ul>
+      </div>
+      <div class="flex flex-column" v-if="queue?.length">
+        <div class="flex">
+          <div class="flex collapse-hitbox" @click="isQueueCollapsed = !isQueueCollapsed">
+            <h2>Queue</h2>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-caret-down-fill rotate-btn"
+              :class="{ rotate: isQueueCollapsed }"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"
+              />
+            </svg>
+          </div>
+          <span class="pt-2" v-if="isQueueCollapsed">({{ queue.length }})</span>
+        </div>
+        <p v-if="isQueueCollapsed">{{ queue.map((item) => item.name).join(', ') }}</p>
+        <ul v-else class="flex flex-column py-3 border-round-lg gap-2">
+          <FigureCard
+            v-for="item in props.queue"
+            :key="item.id"
+            :id="item.id"
+            :name="item.name"
+            :perimeter="item.perimeter"
+            :is-completed="item.isCompleted"
+            :printer-props="props"
+            :is-printing="isPrinting"
+          />
+        </ul>
+      </div>
+      <button class="w-full" :class="{ disabled: isPrinting }" @click="queueHandle">
+        Add to queue
+      </button>
     </div>
     <div class="flex flex-column">
       <h2>Info</h2>
@@ -384,3 +430,18 @@ const deletePrinter = () => {
     </template>
   </DialogWindow>
 </template>
+
+<style scoped>
+.collapse-hitbox {
+  cursor: pointer;
+}
+
+.rotate-btn {
+  transition: transform 0.3s ease-in-out;
+  padding: 10px;
+}
+
+.rotate {
+  transform: rotate(-90deg);
+}
+</style>

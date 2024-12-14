@@ -6,17 +6,17 @@
       "brand": "Apple",
       "speed": 100,
       "coil": {
-        "id": "jypspo9",
-        "material": "ABS",
-        "color": "orange",
-        "length": 1199
+        "id": "rlmgafm",
+        "material": "PBT",
+        "color": "green",
+        "length": 495.9
       },
       "queue": [
         {
-          "id": "2x7othm",
+          "id": "xmxc592",
           "isCompleted": false,
-          "name": "2132",
-          "perimeter": 2,
+          "name": "Bebra",
+          "perimeter": 123,
           "imgUrl": "figure.png"
         }
       ],
@@ -43,16 +43,16 @@
   ],
   "coils": [
     {
-      "id": "rlmgafm",
-      "material": "PBT",
-      "color": "green",
-      "length": 495.9
-    },
-    {
       "id": "xtprzup",
       "material": "PLA",
       "color": "red",
       "length": 997
+    },
+    {
+      "id": "jypspo9",
+      "material": "ABS",
+      "color": "orange",
+      "length": 1199
     }
   ],
   "figures": []
