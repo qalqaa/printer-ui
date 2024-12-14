@@ -5,21 +5,8 @@
       "name": "Iprinter",
       "brand": "Apple",
       "speed": 100,
-      "coil": {
-        "id": "rlmgafm",
-        "material": "PBT",
-        "color": "green",
-        "length": 495.9
-      },
-      "queue": [
-        {
-          "id": "xmxc592",
-          "isCompleted": false,
-          "name": "Bebra",
-          "perimeter": 123,
-          "imgUrl": "figure.png"
-        }
-      ],
+      "coil": null,
+      "queue": [],
       "imgUrl": "Iprinter.png"
     },
     {
@@ -53,6 +40,12 @@
       "material": "ABS",
       "color": "orange",
       "length": 1199
+    },
+    {
+      "id": "rlmgafm",
+      "material": "PBT",
+      "color": "green",
+      "length": 495.9
     }
   ],
   "figures": []

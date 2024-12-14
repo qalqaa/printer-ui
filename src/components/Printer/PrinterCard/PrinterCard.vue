@@ -350,7 +350,7 @@ const isCoilCollapsed = ref(true)
         Print status: {{ isPrinting ? `printing... ` + progress + '%' : 'offline' }}
       </p>
 
-      <ProgressBar :progress="progress" />
+      <ProgressBar :progress="progress" class="mb-1" />
       <button
         :class="{ disabled: isPrinting }"
         class="inverted w-full"
