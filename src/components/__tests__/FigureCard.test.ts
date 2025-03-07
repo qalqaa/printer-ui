@@ -1,4 +1,5 @@
 import FigureCard from '@/components/Figure/card/FigureCard.vue'
+import { CustomError } from '@/model/error/customError'
 import { useFiguresStore } from '@/stores/figuresStore'
 import { usePrintersStore } from '@/stores/printersStore'
 import { mount } from '@vue/test-utils'
@@ -36,18 +37,19 @@ describe('FigureCard.vue (с использованием Pinia)', () => {
 
   it('инициализирует все поля корректно', () => {
     expect(wrapper.props('id')).toBe(props.id)
-    expect(wrapper.vm.fields.figureName.value).toBe(props.name)
+    expect(wrapper.props('name')).toBe(props.name)
+    expect(wrapper.props('perimeter')).toBe(props.perimeter)
   })
 
   it('выбрасывает ошибку, если не переданы обязательные свойства', () => {
+    wrapper.vm.fields.figureName.value = ''
     expect(() => {
-      props = { id: '52' }
-    }).toThrow()
+      wrapper.vm.editFigure()
+    }).toThrowError(new CustomError('Fill all required fields'))
   })
 
   it('выбрасывает ошибку при отрицательном периметре', async () => {
     wrapper.vm.fields.figurePerimeter.value = -5
-
     await expect(() => wrapper.vm.editFigure()).toThrow("Perimeter can't be negative or null")
 
     expect(wrapper.vm.errors.figurePerimeter.value).toBe(true)
