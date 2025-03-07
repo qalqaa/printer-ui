@@ -26,9 +26,7 @@ export class SimulateError extends Error {
     this.name = 'SimulateError'
     this.details = details
 
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, CustomError)
-    }
+    this.stack = new Error().stack
   }
 
   get type(): 'thread' | 'nozzle' | 'electricity' | null {
